@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>使用MetaMask</title>
+    <style>
+        body {
+            font-family: Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
+            background-color: #FFFFFF;
+            margin: 0;
+        }
+
+        a {
+            color: blue;
+        }
+
+        /* Container */
+        .container {
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #FFFFFF;
+        }
+
+        /* Header */
+        header {
+            width: 100%;
+            height: 8%;
+            background-color: #5D5E5D;
+            border-bottom: 1px solid #353635;
+        }
+
+        .logo {
+            color: #fff;
+            font-weight: bold;
+            margin-left: auto;
+            letter-spacing: 4px;
+            margin-right: auto;
+            text-align: center;
+            padding-top: 15px;
+            line-height: 2em;
+            font-size: 22px;
+        }
+
+        /* About Section */
+        .gallery {
+            clear: both;
+            display: inline-block;
+            width: 100%;
+            background-color: #FFFFFF;
+            /* [disabled]min-width: 400px;*/
+            padding-bottom: 35px;
+            padding-top: 0px;
+            margin-top: -5px;
+            margin-bottom: 0px;
+        }
+
+        .thumbnail {
+            width: 100%;
+            text-align: center;
+            float: left;
+            margin-top: 35px;
+            background-color: #F8F8F8;
+            padding-bottom: 20px;
+            margin-left: 0;
+            margin-right: 0;
+            border-radius: 3px;
+            padding-top: 20px;
+            border-bottom: 4px solid #6DC7D0;
+        }
+
+        .gallery .thumbnail h4 {
+            margin-top: 5px;
+            margin-bottom: 5px;
+            color: #52BAD5;
+            text-align: left;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .gallery .thumbnail p {
+            margin: 0;
+            color: #B3B3B3;
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        /* More info */
+        .intro {
+            background-color: #FFFFFF;
+            padding-bottom: 35px;
+        }
+
+        .column {
+            width: 50%;
+            text-align: center;
+            padding-top: 30px;
+            float: left;
+        }
+
+        .intro .column h3 {
+            color: #FFFFFF;
+            text-align: center;
+        }
+
+        .intro .column p {
+            color: #FFFFFF;
+        }
+
+        .intro .column p {
+            padding-left: 30px;
+            padding-right: 30px;
+            text-align: justify;
+            line-height: 25px;
+            font-weight: lighter;
+            margin-left: 20px;
+            margin-right: 20px;
+            width: 80%;
+            margin-top: 4%;
+        }
+
+        footer {
+            background-color: #B3B3B3;
+            padding-top: 60px;
+            padding-bottom: 60PX;
+        }
+
+        .intro {
+            display: inline-block;
+            background-color: #6DC7D0;
+        }
+
+        .profile {
+            width: 50%;
+        }
+
+        /* Mobile */
+        @media (max-width: 320px) {
+            .logo {
+                width: 100%;
+                text-align: center;
+                margin-top: 13px;
+                margin-right: 0px;
+                margin-bottom: 0px;
+                margin-left: 0px;
+            }
+
+            .intro .column p {
+                width: 80%;
+                margin-left: 0px;
+            }
+
+            .thumbnail {
+                width: 100%;
+            }
+
+            .column {
+                width: 100%;
+                margin-top: 0px;
+            }
+        }
+
+        /* Small Tablets */
+        @media (min-width: 321px)and (max-width: 767px) {
+            .logo {
+                width: 100%;
+                text-align: center;
+                margin-top: 13px;
+                margin-right: 0px;
+                margin-bottom: 0px;
+                margin-left: 0px;
+            }
+
+            .thumbnail {
+                width: 100%;
+            }
+
+            .column {
+                width: 100%;
+                margin-top: 0px;
+            }
+
+            .thumbnail {
+                width: 100%;
+            }
+
+            .column {
+                width: 100%;
+                margin-left: 0px;
+                margin-right: 0px;
+            }
+
+            .profile {
+                width: 100%;
+            }
+
+            .intro .column p {
+                width: 90%;
+                padding-left: 0px;
+            }
+        }
+
+        /* Small Desktops */
+        @media (min-width: 768px) and (max-width: 1096px) {
+            .thumbnail {
+                width: 48%;
+            }
+
+            .intro .column p {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h4 class="logo">MetaMask</h4>
+    </header>
+    <!-- Hero Section -->
+    <section class="intro">
+        <div class="column">
+            <h3>&nbsp;</h3>
+            <img src="images/metamask.png" alt="" class="profile"></div>
+        <div class="column">
+            <p>MetaMask是一款在浏览器上使用的插件类型的以太坊钱包。该钱包不需要下载，只需要在浏览器添加对应的扩展程序即可，非常轻量级，使用起来也非常方便。官方地址：<a
+                    href="https://metamask.io/">https://metamask.io/</a></p>
+            <p>使用火狐Firefox的用户可以在火狐的插件页面中搜索并安装。</p>
+            <p>使用谷歌Chrome的用户要安装此插件，需要访问Chrome的<a
+                    href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=zh-CN">网上应用店</a>，但由于众所周知的原因而需要科学上网方法。
+            </p>
+            <p>为了方便大家安装，这里有已下载的插件：<a href="download/metamask_4_17_0_0-cn.zip">获取插件</a>（此为<a
+                    href="https://clients2.googleusercontent.com/crx/blobs/QwAAAHF3InbmK-wFIemaY3I3BCO_4l3gezMJFB5PMm4ZuAlY7KV6BIjN_00h8t1LvudODPBsauRjT8loefnm665PGRIzoW0eHE14SxqM6fjRP_UNAMZSmuX8xbOItwBAwhHk7RuhaJkfgOBEQQ/extension_4_17_0_0.crx">原地址</a>）。
+            </p>
+            <p>安装方法：把以上插件下载并解压（插件的运行需要这些文件，所以必须解压到一个不会被当作垃圾删除的目录中）。打开谷歌浏览器Chrome，地址栏输入 <span
+                    style="color:#000000;font-weight: 600">chrome://extensions</span> 按照下图操作即可。</p>
+            <p>(此教程不适用于iOS及安卓系统，请在桌面系统中使用)</p>
+        </div>
+    </section>
+    <section class="gallery">
+        <div class="thumbnail"><img src="images/teach.png" alt="teach" width="100%"></div>
+    </section>
+</div>
+</body>
+</html>
