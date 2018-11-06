@@ -169,31 +169,31 @@ function setInfo(promises) {
     $('#currentNumber').text(info.currentNumber);
     $('#coinPerAccount').text(info.coinPerAccount);
     $('#CCoinCount').attr('max', info.coinPerAccount);
-    if (info.myFundingCoins > 0) {
+    if (info.myFundingCoins.gt(0)) {
         if (properties.waitingResult) delete properties.waitingResult;
         $('#info').addClass('over');
-        $('#info .closed').text('恭喜，你已众筹成功，获得' + info.myFundingCoins.div(10) + '枚FUS！');
+        $('#info .closed').text('恭喜，你已众筹成功，获得' + info.myFundingCoins.div(10).valueOf() + '枚FUS！');
         $('#funding').hide();
     } else {
         var now = Date.parse(new Date()) / 1000;
-        while (now > info.nextTime) {
-            if (info.times < 0) break;
+        while (info.nextTime.lt(now)) {
+            if (info.times.lt(0)) break;
             info.running = true;
             info.times -= 1;
             info.nextTime = info.nextTime.add(info.interval);
             info.currentNumber = 0;
         }
-        if (info.times < 0) {
+        if (info.times.lt(0)) {
             $('#info').addClass('over');
-            if (now > info.nextTime) $('#info .closed').text('众筹已结束');
+            if (info.nextTime.lt(now)) $('#info .closed').text('众筹已结束');
         } else if (!info.running) {
             $('#info').addClass('over');
-        } else if (info.currentNumber < info.numberPerTime) {
-            $('#left').text(info.numberPerTime - info.currentNumber);
+        } else if (info.currentNumber.lt(info.numberPerTime)) {
+            $('#left').text(info.numberPerTime.sub(info.currentNumber).valueOf());
             $('#info').removeClass('finished');
         } else {
             $('#info').addClass('finished');
-            var n = info.nextTime - now;
+            var n = info.nextTime.toNumber() - now;
             var s = n % 60;
             var m = ((n - s) / 60) % 60;
             var h = ((n - s) / 60 - m) / 60;
