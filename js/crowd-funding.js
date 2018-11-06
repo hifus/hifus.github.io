@@ -217,7 +217,7 @@ function onFundingButtonSubmit() {
         return;
     }
 
-    properties.Contract.funding(coinCount, {gas:800000}, function (err, txHash) {
+    properties.Contract.funding(coinCount, {gas: 800000}, function (err, txHash) {
         if (err) {
             if (err !== 'cancelled') {
                 alertify.error('发生错误，请查看控制台日志。');
