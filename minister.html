@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>特级会员激活页面</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css"
+          integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="css/alertify.css"/>
+    <style>
+        #loadingSpinner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, .85);
+            display: block;
+            opacity: 1;
+            top: 0;
+            left: 0;
+        }
+
+        #loadingSpinner > * {
+            color: rgba(0, 0, 0, .87);
+            z-index: 1000;
+            position: absolute;
+            left: 0;
+            top: 45%;
+            width: 100%;
+            text-align: center;
+            font-size: x-large;
+        }
+
+        #loadingText.waiting {
+            top: 30%;
+            padding-top: 5rem;
+        }
+
+        #loadingText.waiting:before {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 50%;
+            background-image: url('images/loader_gray.gif');
+            background-size: 4.57142857rem 4.57142857rem;
+            width: 4.57142857rem;
+            height: 4.57142857rem;
+            margin: 0 0 0 -2.28571429rem;
+        }
+
+        body > section.actived, body.actived > section:not(.actived) {
+            display: none;
+        }
+
+        body.actived > section.actived {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<section class="actived">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-8 mx-auto">
+                <div class="jumbotron">
+                    <div class="row mx-0">
+                        <div class="text-center col-12">
+                            <h2>您已是特级会员</h2>
+                        </div>
+                        <hr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-8 mx-auto">
+                <div class="jumbotron">
+                    <div class="row mx-0">
+                        <div class="text-center col-12">
+                            <h2>激活为特级会员</h2>
+                        </div>
+                        <hr>
+                        <div class="text-center col-12">
+                            <h6 class="my-3 text-center">当前地址：<br>
+                                <div id="address" class="text-truncate">
+                                    0x
+                                </div>
+                            </h6>
+                            <form id="activeForm" class="text-center">
+                                <div class="form-group">
+                                    <label for="code">激活码</label>
+                                    <input type="text" class="form-control text-monospace" style="font-size: 1.1rem;"
+                                           id="code" name="code" placeholder="0x"
+                                           aria-describedby="codeHelp">
+                                    <span id="codeHelp" class="form-text text-muted"
+                                          style="display: none;">请填入激活码</span>
+                                </div>
+                            </form>
+                            <div class="col-sm-4 col-auto mx-auto">
+                                <button id="activeSubmit" class="btn btn-block btn-lg btn-primary">马上激活</button>
+                            </div>
+                        </div>
+                        <div id="loadingSpinner">
+                            <div id="loadingText" class="d-none waiting">正在连接MetaMask...</div>
+                            <noscript>
+                                此页面需要执行Javascript。
+                            </noscript>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 mx-auto">
+            <div class="jumbotron">
+                <div class="row mx-0">
+                    <div class="text-left col-12">
+                        <h6>特级会员数量：<span id="s_num">0</span></h6>
+                        <h6>收养用户数量：<span id="s_adopted">0</span></h6>
+                        <h6>累计收养收益：<span id="s_profit">0</span> ETH</h6>
+                    </div>
+                    <hr>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 mx-auto">
+            <div class="row mx-0">
+                <div class="text-left col-12">
+                    <h4>特级会员说明：</h4>
+                    <p>特级会员享有收养权力。每当一个新的未加入层级的账号消费时，系统会轮流选择一个特级会员作为这个新账号的父级账号。在收养期内，特级会员会获得被收养账号6%的消费提成。</p>
+                    <p>当出现以下情况时，收养结束：</p>
+                    <p>1.被收养账号主动加入层级，则此账号不再被收养，其之后的提成归其真实的父级账号。</p>
+                    <p>2.特级会员权限到期，则自动释放其所有的收养账号。以后这些账号进行消费时，将按同样规则轮流选择一个有效的特级会员作其父级。</p>
+                </div>
+                <hr>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=" crossorigin="anonymous"></script>
+<script src="js/alertify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"
+        integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.5.2/bluebird.min.js"
+        integrity="sha256-KxHSEnmbcOfmmoeGOLsNUpBeOrNbssSJ3fyskCGsN6M=" crossorigin="anonymous"></script>
+<script src="js/contracts.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/minister.js"></script>
+</body>
+</html>

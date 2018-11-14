@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>资产管理</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css"
+          integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="css/alertify.css"/>
+    <style>
+        #loadingSpinner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, .85);
+            display: block;
+            opacity: 1;
+            top: 0;
+            left: 0;
+        }
+
+        #loadingSpinner > * {
+            color: rgba(0, 0, 0, .87);
+            z-index: 1000;
+            position: absolute;
+            left: 0;
+            top: 45%;
+            width: 100%;
+            text-align: center;
+            font-size: x-large;
+        }
+
+        #loadingText.waiting {
+            top: 30%;
+            padding-top: 5rem;
+        }
+
+        #loadingText.waiting:before {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 50%;
+            background-image: url('images/loader_gray.gif');
+            background-size: 4.57142857rem 4.57142857rem;
+            width: 4.57142857rem;
+            height: 4.57142857rem;
+            margin: 0 0 0 -2.28571429rem;
+        }
+
+        .NoDividends {
+            color: red !important;
+            text-decoration: underline !important;
+        }
+
+        #tbl td {
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 mx-auto">
+            <div class="jumbotron">
+                <div class="row">
+                    <div class="text-center col-12">
+                        <h2>我的资产</h2>
+                    </div>
+                    <div class="col-12 col-md-8 mx-auto mt-3 h5">
+                        <div class="row" style="line-height: 2rem;">
+                            <div class="col-4 text-right pr-0">ETH</div>
+                            <div class="col-8 text-truncate" id="eth">0</div>
+                            <div class="col-4 text-right pr-0">coToken</div>
+                            <div class="col-8 text-truncate" id="cotoken">0</div>
+                            <div class="col-4 text-right pr-0">总计</div>
+                            <div class="col-8 text-truncate" id="total">0</div>
+                        </div>
+                        <div class="row">
+                            <div id="exchangeOk" class="alert alert-success col-auto mx-auto"
+                                 style="display: none;z-index: 100;" role="alert">转换成功
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-8 mx-auto h5">
+                        <div class="row">
+                            <div class="col-auto mx-auto">
+                                <button type="button" class="btn btn-primary" id="buy">转为coToken</button>
+                                <img src="images/exchange.png" style="height: 2rem;">
+                                <button type="button" class="btn btn-primary" id="sell">转为ETH</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-8 mx-auto mt-3 h5">
+                        <div class="row" style="line-height: 2rem;">
+                            <div class="col-4 text-right pr-0">FUS</div>
+                            <div class="col-8 text-truncate" id="fus">0</div>
+                            <div class="col-4 text-right pr-0">可提分红</div>
+                            <div class="col-8 text-truncate" id="dividends">0</div>
+                            <div class="col-4 text-right pr-0">下次分红</div>
+                            <div class="col-8" id="dividend_date">2018-11-12</div>
+                        </div>
+                        <div class="row">
+                            <div id="withdrawOk" class="alert alert-success col-auto mx-auto"
+                                 style="display: none;z-index: 100;" role="alert">提取成功
+                            </div>
+                            <div id="moveOk" class="alert alert-success col-auto mx-auto"
+                                 style="display: none;z-index: 100;" role="alert">转移成功
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-8 mx-auto px-0">
+                        <table class="table text-center">
+                            <thead class="h6" style="white-space:nowrap;">
+                            <tr>
+                                <th>项目</th>
+                                <th>有效FUS</th>
+                                <th>预计分红</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tbl" class="text-truncate">
+                            <tr>
+                                <td class="h6">总计</td>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-12 col-md-8 mx-auto h5">
+                        <div class="row">
+                            <div class="col-auto mx-auto">
+                                <button type="button" class="btn btn-primary mr-3" id="withdraw">提取分红</button>
+                                <button type="button" class="btn btn-primary mr-3" id="move">转移</button>
+                                <button type="button" class="btn btn-primary" id="trade">交易</button>
+                            </div>
+                            <div id="loadingSpinner">
+                                <div id="loadingText" class="d-none waiting">正在连接MetaMask...</div>
+                                <noscript>
+                                    此页面需要执行Javascript。
+                                </noscript>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="cotokenModal" tabindex="-1" role="dialog" aria-labelledby="cotokenModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cotokenModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 px-0">
+                            <form>
+                                <div class="form-group">
+                                    <label for="amount">转换数量</label>
+                                    <input type="number" class="form-control" id="amount" placeholder="输入需要转换的数量">
+                                    <small class="form-text text-muted">1:1转换，无手续费</small>
+                                </div>
+                                <div class="row">
+                                    <div id="invAmount" class="alert alert-danger col-auto mx-auto"
+                                         style="display: none;z-index: 100;" role="alert">无效的数量
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="targetAccount">目标账号（0x开头）</label>
+                                    <textarea class="form-control" id="targetAccount" rows="2"
+                                              placeholder="转到指定账号，留空表示当前账号" spellcheck="false"></textarea>
+                                </div>
+                                <div class="row">
+                                    <div id="invTarget" class="alert alert-danger col-auto mx-auto"
+                                         style="display: none;z-index: 100;" role="alert">无效的账号
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="cotokenConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="FusModal" tabindex="-1" role="dialog" aria-labelledby="FusModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="FusModalLabel">转移FUS</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 px-0">
+                            <form>
+                                <div class="form-group">
+                                    <label for="FusAmount">转换数量</label>
+                                    <input type="number" class="form-control" id="FusAmount" placeholder="输入转移的数量">
+                                </div>
+                                <div class="row">
+                                    <div id="invFusAmount" class="alert alert-danger col-auto mx-auto"
+                                         style="display: none;z-index: 100;" role="alert">无效的数量
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="FusTargetAccount">目标账号（0x开头）</label>
+                                    <textarea class="form-control" id="FusTargetAccount" rows="2"
+                                              placeholder="转到指定账号" spellcheck="false"></textarea>
+                                </div>
+                                <div class="row">
+                                    <div id="invFusTarget" class="alert alert-danger col-auto mx-auto"
+                                         style="display: none;z-index: 100;" role="alert">无效的账号
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="FusConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=" crossorigin="anonymous"></script>
+<script src="js/alertify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"
+        integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.5.2/bluebird.min.js"
+        integrity="sha256-KxHSEnmbcOfmmoeGOLsNUpBeOrNbssSJ3fyskCGsN6M=" crossorigin="anonymous"></script>
+<script src="js/contracts.js"></script>
+<script src="js/items.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/assets.js"></script>
+</body>
+</html>

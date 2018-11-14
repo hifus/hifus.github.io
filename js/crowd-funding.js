@@ -20,17 +20,6 @@ var abi = [
         "type": "function"
     },
     {
-        "inputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-    },
-    {
-        "payable": true,
-        "stateMutability": "payable",
-        "type": "fallback"
-    },
-    {
         "constant": true,
         "inputs": [],
         "name": "getInfo",
@@ -138,18 +127,6 @@ var abi = [
     }
 ];
 
-var properties = {
-    'Contract': null,
-    'LastBlock': 0,
-    'NewBlock': 0,
-    'processedTxs': {},
-    'conversationRates': {}
-};
-
-var blockchain = {};
-
-var info = {};
-
 function setInfo(promises) {
     info.totalCCoin = promises[0];
     info.nextTime = promises[1];
@@ -179,9 +156,9 @@ function setInfo(promises) {
         while (info.nextTime.lt(now)) {
             if (info.times.lt(0)) break;
             info.running = true;
-            info.times -= 1;
+            info.times = info.times.sub(1);
             info.nextTime = info.nextTime.add(info.interval);
-            info.currentNumber = 0;
+            info.currentNumber = web3.toBigNumber(0);
         }
         if (info.times.lt(0)) {
             $('#info').addClass('over');
@@ -231,66 +208,38 @@ function onFundingButtonSubmit() {
     });
 }
 
-jQuery(function () {
-    var loadingText = $('#loadingText').removeClass("d-none");
+$(start(function (account) {
+    properties.Contract = web3.eth.contract(abi).at(contractAddresses.CrowdFunding);
 
-    function work() {
-        properties.Web3.eth.defaultAccount = properties.Web3.eth.accounts[0];
+    return Promise.all([
+        Promise.promisify(properties.Contract.funding),
+        Promise.promisify(properties.Contract.getInfo),
+        Promise.promisify(properties.Contract.getInfoShort),
+        Promise.promisify(properties.Contract.lastError)
+    ]).then(function (_promisfied) {
+        // store promisified functions
+        blockchain.funding = _promisfied[0];
+        blockchain.getInfo = _promisfied[1];
+        blockchain.getInfoShort = _promisfied[2];
+        blockchain.lastError = _promisfied[3];
 
-        properties.Contract = web3.eth.contract(abi).at(contractAddresses.CrowdFunding);
-
-        Promise.all([
-            Promise.promisify(properties.Contract.funding),
-            Promise.promisify(properties.Contract.getInfo),
-            Promise.promisify(properties.Contract.getInfoShort),
-            Promise.promisify(properties.Contract.lastError)
-        ]).then(function (_promisfied) {
-            // store promisified functions
-            blockchain.funding = _promisfied[0];
-            blockchain.getInfo = _promisfied[1];
-            blockchain.getInfoShort = _promisfied[2];
-            blockchain.lastError = _promisfied[3];
-
-            // hook dom interaction event listeners
-            return Promise.all([
-                //blockchain.lastError(properties.Web3.eth.defaultAccount),
-                $('input[type=number]').on('keypress', function (e) {
-                    return (e.charCode >= 0x30 && e.charCode <= 0x39);
-                }),
-                jQuery(".funding button").on('click', onFundingButtonSubmit),
-                jQuery("#address").text(properties.Web3.eth.defaultAccount)
-            ]);
-        }).then(function (promises) {
-            //console.log(promises[0]);
-            return blockchain.getInfo();
-        }).then(function (promises) {
-            setInfo(promises);
-            if (info.isAllow) {
-                jQuery('#loadingSpinner').hide();
-                return setInterval(refreshData, 1000);
-            } else {
-                loadingText.removeClass("waiting").text("此账号未曾参与LastWinner(现在参与已无效)");
-                return false;
-            }
-        }).catch(function (err) {
-            console.log("出错了", err);
-        });
-    }
-
-    if (typeof ethereum !== 'undefined') {
-        properties.Web3 = new Web3(ethereum);
-        var a;
-        try {
-            // Request account access if needed
-            a = ethereum.enable();
-        } catch (error) {
-            a = undefined;
+        // hook dom interaction event listeners
+        return Promise.all([
+            $('input[type=number]').on('keypress', function (e) {
+                return (e.charCode >= 0x30 && e.charCode <= 0x39);
+            }),
+            $(".funding button").on('click', onFundingButtonSubmit),
+            $("#address").text(account)
+        ]);
+    }).then(function () {
+        return blockchain.getInfo();
+    }).then(function (promises) {
+        setInfo(promises);
+        if (info.isAllow) {
+            $('#loadingSpinner').hide();
+            setInterval(refreshData, 1000);
+        } else {
+            loadingText.removeClass("waiting").text("此账号未曾参与LastWinner(现在参与已无效)");
         }
-        if (a) a.then(work);
-    } else if (typeof web3 !== 'undefined') {
-        properties.Web3 = new Web3(web3.currentProvider);
-        work();
-    } else {
-        loadingText.removeClass("waiting")[0].innerHTML = "未能连接到MetaMask！<br>请安装MetaMask并登录后再刷新页面！";
-    }
-});
+    });
+}));

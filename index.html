@@ -36,10 +36,8 @@
 <section>
     <div class="container">
         <div class="row">
-            <div class="col-md-6 col-12">
+            <div class="col-md-6 col-12" id="hot">
                 <h3>热门应用</h3>
-                <hr>
-                <div class="row" id="hot"></div>
                 <hr>
             </div>
             <div class="col-md-6 col-sm-12" id="announcement">
@@ -63,18 +61,26 @@
             return false;
         });
         if (typeof hot !== 'undefined') {
-            var $hot = $('#hot');
+            var $hot = $('#hot'), $row;
             $.each(hot, function (i, e) {
-                $('<div class="col-4"><div class="text-center"><a><img></a></div></div>').appendTo($hot).find('a').attr('href', e[0]).find('img').attr('src', e[1]).attr('alt', e[2] || '');
+                if (i % 3 === 0) {
+                    $row = $('<div class="row"></div>').appendTo($hot);
+                    $('<hr>').appendTo($hot);
+                }
+                $('<div class="col-4"><div class="text-center"><a><img></a></div></div>').appendTo($row).find('a').attr('href', e[0]).find('img').attr('src', e[1]).attr('alt', e[2] || '');
             });
         }
         if (typeof announcement !== 'undefined') {
             var $announcement = $('#announcement');
             $.each(announcement, function (i, e) {
-                var $d = $('<div class="row"><div class="col-8"><h4></h4></div><div class="col-4"><h6 class="text-right"><span aria-hidden="true"></span></h6></div></div>').appendTo($announcement);
+                var $d = $('<div class="row no-gutters"><div class="col-8"><h4></h4></div><div class="col-4"><h6 class="text-right"><span aria-hidden="true"></span></h6></div></div>').appendTo($announcement);
                 $d.find('h4').text(e[0]);
                 $d.find('h6').append(document.createTextNode(e[1]));
-                $('<p></p>').appendTo($announcement).text(e[2]);
+                if(e[3]) {
+                    $('<p></p>').appendTo($announcement).html(e[2]);
+                } else {
+                    $('<p></p>').appendTo($announcement).text(e[2]);
+                }
             });
         }
     })
