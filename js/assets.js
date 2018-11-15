@@ -206,20 +206,6 @@ var FusAbi = [
     },
     {
         "constant": true,
-        "inputs": [],
-        "name": "testFlag",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
         "inputs": [
             {
                 "name": "",
@@ -606,23 +592,6 @@ var appAbi = [
     }
 ];
 
-var lw2Abi = [
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "testFlag2",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    }
-];
-
 function onCotokenConfirm() {
     var amount = web3.toBigNumber($('#amount').val());
     if (amount.gt(0)) {
@@ -664,9 +633,6 @@ function fillDividendsTable(promises) {
     c.filter(':not(:last)').each(function (i, tr) {
         if (promises[i * 2 + 1]) {
             var v = $(tr).data('fus');
-            if (typeof v === 'undefined') {
-                debugger;
-            }
             if (v.gt(0)) {
                 v = promises[i * 2].mul(properties.fus).div(v).div(properties.ether);
             }
@@ -744,7 +710,6 @@ $(start(function (account) {
     properties.CoTokenContract = web3.eth.contract(coTokenAbi).at(contractAddresses.coToken);
     properties.FusContract = web3.eth.contract(FusAbi).at(contractAddresses.Fus);
     properties.DelegateContract = web3.eth.contract(delegateAbi).at(contractAddresses.FusPeerDelegate);
-    properties.lw2Contract = web3.eth.contract(lw2Abi).at(contractAddresses.LastWinner2);
 
     return Promise.all([
         Promise.promisify(properties.Web3.eth.getBalance),
@@ -765,8 +730,6 @@ $(start(function (account) {
         Promise.promisify(properties.FusContract.validHolders),
 
         Promise.promisify(properties.DelegateContract.getValidFus),
-        Promise.promisify(properties.FusContract.testFlag),
-        Promise.promisify(properties.lw2Contract.testFlag2),
     ]).then(function (_promisfied) {
         // store promisified functions
         blockchain.balanceOfETH = _promisfied[0];
@@ -787,8 +750,6 @@ $(start(function (account) {
         blockchain.validHolders = _promisfied[13];
 
         blockchain.getValidFus = _promisfied[14];
-        blockchain.testFlag = _promisfied[15];
-        blockchain.testFlag2 = _promisfied[16];
 
         // hook dom interaction event listeners
         return Promise.all([
@@ -870,8 +831,6 @@ $(start(function (account) {
             })();
 
             return Promise.all(apps);
-            //setInterval(refreshData, 10000);
-            //refreshData();
         }
     }).then(function (_promisfied) {
         if (_promisfied) {

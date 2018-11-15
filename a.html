@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>我的层级</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css"
+          integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="css/alertify.css"/>
+    <style>
+        #loadingSpinner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, .85);
+            display: block;
+            opacity: 1;
+            top: 0;
+            left: 0;
+        }
+
+        #loadingSpinner > * {
+            color: rgba(0, 0, 0, .87);
+            z-index: 1000;
+            position: absolute;
+            left: 0;
+            top: 45%;
+            width: 100%;
+            text-align: center;
+            font-size: x-large;
+        }
+
+        #loadingText.waiting {
+            top: 30%;
+            padding-top: 5rem;
+        }
+
+        #loadingText.waiting:before {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 50%;
+            background-image: url('images/loader_gray.gif');
+            background-size: 4.57142857rem 4.57142857rem;
+            width: 4.57142857rem;
+            height: 4.57142857rem;
+            margin: 0 0 0 -2.28571429rem;
+        }
+
+        #ministerList {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-left: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 2rem;
+            font-weight: 500;
+        }
+
+        .tips {
+            display: none;
+            z-index: 1;
+            margin-bottom: 0;
+        }
+
+        body > section.registered, body.registered > section:not(.registered) {
+            display: none;
+        }
+
+        body.registered > section.registered {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<section class="registered">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-8 mx-auto">
+                <div class="jumbotron">
+                    <div class="row">
+                        <div class="text-center col-12">
+                            <h2>我的层级</h2>
+                        </div>
+                        <div class="col-12 col-md-8 mx-auto text-left text-truncate">
+                            地址：<span id="account">0x</span>
+                        </div>
+                        <div class="col-12 col-md-8 mx-auto">
+                            <div class="row">
+                                <div class="col-12 text-left">
+                                    邀请链接（点击复制）：
+                                </div>
+                                <div class="col-12 text-truncate"
+                                     style="font-size: 0.5rem; line-height: 2rem; cursor: pointer;">
+                                    <code id="recommend"></code>
+                                </div>
+                                <div id="copy_ok" class="alert alert-success"
+                                     style="position: absolute;top: 0;left: 50%;display: none;" role="alert">
+                                    已复制到剪贴板
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-8 mx-auto h5">
+                            直接下级：<span id="inferior_count">0</span>
+                        </div>
+                        <div class="col-12 col-md-8 mx-auto h5">
+                            间接下级：<span id="inferior2_count">0</span>
+                        </div>
+                        <div class="col-12 col-md-8 mx-auto h5">
+                            累计贡献：<u id="contribute" style="cursor: pointer;">0</u> ETH
+                        </div>
+                        <div id="tip_green" class="alert alert-success tips col-12 col-md-8 mx-auto text-center"
+                             role="alert">
+                            已完成0.8ETH贡献<br>可以获得下级及下下级收益
+                        </div>
+                        <div id="tip_orange" class="alert alert-warning tips col-12 col-md-8 mx-auto text-center"
+                             role="alert">
+                            已完成0.5ETH贡献<br>可以获得下级收益,但未能获得下下级收益
+                        </div>
+                        <div id="tip_red" class="alert alert-danger tips col-12 col-md-8 mx-auto text-center"
+                             role="alert">
+                            未完成0.5ETH贡献<br>下级及下下级收益都未能获得
+                        </div>
+                        <div class="col-12 col-md-8 mx-auto h5">
+                            未提收益：<span id="profit">0</span> ETH
+                        </div>
+                        <div class="col-12 col-md-8 mx-auto h5">
+                            收养下级：<span id="adopt_count">0</span>
+                        </div>
+                        <div class="col-12 col-md-8 mx-auto h5">
+                            收养收益：<span id="adopt_profit">0</span> ETH
+                        </div>
+                        <div class="col-12 col-md-8 mx-auto h5">
+                            收养结束：<span id="adopt_end">0000-00-00</span>
+                        </div>
+                        <div class="col-12 col-md-8 mx-auto h5 text-center mt-3">
+                            <button type="button" class="btn btn-primary" id="withdraw">提取收益</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="mt-0 registered">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-8 mx-auto">
+                <div class="row mx-0">
+                    <div class="text-left col-12">
+                        <h4>会员说明：</h4>
+                        <p>成为会员后，可以发展自己的下线，并可以获得自己下线6%的消费提成，以及下下线3%的消费提成。</p>
+                        <p>会员层级不可变改，当注册成为某会员的下线后，不可再次注册或改变上级。每个会员只有一个上级，但可以发展无限个下级，下级越多，将会获得的收益越大。</p>
+                        <p>会员要获得收益，必须首先保证上级的收益。在向上级累计提供0.5ETH的收益后，下级的收益将全部归自己所有。向上级累计提供0.8ETH收益后，下下级的收益也将全部归自己所有。</p>
+                        <p>当未完成上级的收益保证时，下级或下下级所贡献的收益，会逐级上传，直到某个祖先级会员已完成了其对上级的贡献。但这个数额，也会被累计在对上级的贡献中。</p>
+                        <p>例如：X -> A -> B -> C -> D -> E</p>
+                        <p>假设A已向X贡献了0.8ETH，B和C都未作过贡献。</p>
+                        <p>若D向C提供0.5ETH贡献，因B和C原来都未提供任何贡献，则此0.5ETH会逐级上传到A，但C此时已贡献了0.5ETH给B，B此时也贡献了0.5ETH给A。</p>
+                        <p>以后D向C的贡献，就全部归C所有。C向B的贡献，也全部归B所有。</p>
+                        <p>若E再向C提供0.3ETH贡献，由于B和C都未满足0.8ETH贡献，所以此0.3ETH也会逐级上传到A，而此时B和C都已向自己上级贡献了0.8ETH。</p>
+                        <p>以后E向C的贡献，也全部归C所有。D向B的贡献，也全部归B所有。</p>
+                    </div>
+                    <hr>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-8 mx-auto">
+                <div class="jumbotron">
+                    <div class="row text-center">
+                        <div class="col-12">
+                            <h2>马上加入我们吧！</h2>
+                        </div>
+                        <hr>
+                        <div class="col-12">
+                            <form id="joinForm">
+                                <div class="form-group">
+                                    <label for="superior">我的推荐人账号</label>
+                                    <input type="text" class="form-control text-monospace" style="font-size: 1.1rem;"
+                                           id="superior" name="superior" placeholder="0x" spellcheck="false"
+                                           aria-describedby="joinHelp">
+                                    <span id="joinHelp" class="form-text text-muted"
+                                          style="display: none;">请填入您的推荐人账号</span>
+                                    <small><a href="#ministerList">选择一级推荐人</a></small>
+                                </div>
+                            </form>
+                            <div class="row">
+                                <div class="col-sm-4 col-auto mx-auto">
+                                    <button id="joinSubmit" class="btn btn-block btn-lg btn-primary">
+                                        马上加入
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="loadingSpinner">
+                            <div id="loadingText" class="d-none waiting">正在连接MetaMask...</div>
+                            <noscript>
+                                此页面需要执行Javascript。
+                            </noscript>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="mt-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2>为什么要加入我们？</h2>
+                <p class="text-md-center">虽然不加入我们，也能使用各种应用，也不会要求额外的费用。</p>
+                <p class="text-xl-center">但填入正确的推荐人代码，并成功加入，您将能<strong>发展下级</strong>，并在下级使用各种应用时<strong>获得提成</strong>。
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="mt-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-8 mx-auto text-center">
+                <h2>一级推荐人账号</h2><h6>（点击选择）</h6>
+            </div>
+            <div class="col-12 col-md-8 mx-auto">
+                <ol id="ministerList"></ol>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=" crossorigin="anonymous"></script>
+<script src="js/alertify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"
+        integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.5.2/bluebird.min.js"
+        integrity="sha256-KxHSEnmbcOfmmoeGOLsNUpBeOrNbssSJ3fyskCGsN6M=" crossorigin="anonymous"></script>
+<script src="js/contracts.js"></script>
+<script src="js/ministers.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/affiliate.js"></script>
+</body>
+</html>
