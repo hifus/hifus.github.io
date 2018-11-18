@@ -207,15 +207,6 @@ $(start((function () {
     }
     var superior = $('#superior').val(search);
 
-    if (typeof ministers !== "undefined") {
-        var ol = $('#ministerList').on('click', 'a', function () {
-            superior.val($(this).text());
-        });
-        $.each(ministers, function (i, e) {
-            $('<a></a>').attr('href', "#joinForm").text(e).appendTo($('<li></li>').appendTo(ol));
-        });
-    }
-
     var recommend = $('#recommend');
     recommend.click(function () {
         copy(recommend);
@@ -237,10 +228,6 @@ $(start((function () {
             }, 5000);
         });
     });
-    
-    if (new Date().getTime() < 1542283200000) {
-        $('#joinSubmit').text('20:00后开启');
-    }
 
     return function (account) {
         properties.Contract = web3.eth.contract(abi).at(contractAddresses.Affiliate);
