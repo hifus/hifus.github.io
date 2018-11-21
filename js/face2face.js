@@ -279,7 +279,7 @@ function startWebcam() {
         if (n > 1) {
             options.shift();
             if (n === 2) {
-                options[0].video.deviceId = properties.videoinput[properties.inputIdx];
+                options[0].video.deviceId = properties.videoinput[properties.inputIdx % properties.videoinput.length];
                 $('#change').on('click', function () {
                     if (captureId !== null) {
                         clearInterval(captureId);
