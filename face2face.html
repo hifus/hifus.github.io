@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>面对面收发</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css"
+          integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="css/alertify.css"/>
+    <style>
+        #loadingSpinner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, .85);
+            display: block;
+            opacity: 1;
+            top: 0;
+            left: 0;
+        }
+
+        #loadingSpinner > * {
+            color: rgba(0, 0, 0, .87);
+            z-index: 1000;
+            position: absolute;
+            left: 0;
+            top: 45%;
+            width: 100%;
+            text-align: center;
+            font-size: x-large;
+        }
+
+        #loadingText.waiting {
+            top: 30%;
+            padding-top: 5rem;
+        }
+
+        #loadingText.waiting:before {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 50%;
+            background-image: url('images/loader_gray.gif');
+            background-size: 4.57142857rem 4.57142857rem;
+            width: 4.57142857rem;
+            height: 4.57142857rem;
+            margin: 0 0 0 -2.28571429rem;
+        }
+
+        .nav-tabs {
+            margin-bottom: .5rem;
+        }
+
+        .nav-link {
+            padding: .5rem .9rem;
+        }
+
+        .nav-link i {
+            margin-left: .3rem;
+        }
+
+        .jsbridge {
+            height: 200px;
+            width: 200px;
+            background-color: red;
+        }
+
+        .upimg {
+            height: 200px;
+            width: 200px;
+            background-color: green;
+            margin-bottom: 50px;
+        }
+
+        .qr-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            white-space: normal;
+            vertical-align: top;
+            line-height: 2;
+            border: 0;
+        }
+
+        input[node-type=jsbridge] {
+            visibility: hidden;
+        }
+
+        #currencies > div {
+            overflow: hidden;
+            text-overflow: clip;
+            white-space: nowrap;
+        }
+
+        .high-light {
+            background-color: gray;
+            color: yellow;
+        }
+
+        video {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 mx-auto">
+            <div class="jumbotron">
+                <div class="row">
+                    <div class="text-center col-12">
+                        <h2>面对面收发</h2>
+                    </div>
+                    <div class="col-auto mx-auto">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="receive-tab" data-toggle="tab" href="#receive" role="tab"
+                                   aria-controls="receive" aria-selected="true">接收<i class="fas fa-sign-in-alt"></i></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="send-tab" data-toggle="tab" href="#send" role="tab"
+                                   aria-controls="send"
+                                   aria-selected="false">发送<i class="fas fa-sign-out-alt"></i></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="download-tab" data-toggle="tab" href="#download" role="tab"
+                                   aria-controls="download" aria-selected="false">下载<i class="fas fa-download"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-12 px-0">
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade text-center text-truncate show active" id="receive"
+                                 role="tabpanel" aria-labelledby="receive-tab">
+                                <div>
+                                    我的账号地址
+                                </div>
+                                <div id="qrcode" class="my-2"></div>
+                                <small id="address"></small>
+                                <h4 class="mt-3">最近接收数量</h4>
+                                <div class="list-group p-1" id="receives"></div>
+                            </div>
+                            <div class="tab-pane fade" id="send" role="tabpanel" aria-labelledby="send-tab">
+                                <div class="text-center">
+                                    <form id="sendForm">
+                                        <div class="form-group">
+                                            <label for="target">目标账号</label>
+                                            <textarea class="form-control text-monospace"
+                                                      style="font-size: 1.1rem;resize:none;"
+                                                      id="target" name="target" placeholder="0x" spellcheck="false"
+                                                      rows="2"
+                                                      aria-describedby="targetHelp"></textarea>
+                                            <span id="targetHelp" class="form-text text-muted"
+                                                  style="display: none;">请填入发送到的目标账号</span>
+                                            <div class="text-right"
+                                                 style="margin-top: -2.6rem;margin-right: 0.1rem;border: 0;z-index: 100;">
+                                                <div id="scan" class="qr-btn btn btn-primary px-1 py-1">
+                                                    <i class="fas fa-qrcode" style="font-size: 2rem;"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="amount">发送数量</label>
+                                            <select style="display: inline-block;font-size: small;" id="currency">
+                                                <option selected value="ETH">以太坊</option>
+                                                <option value="BTC">比特币</option>
+                                                <option value="USD">美元</option>
+                                                <option value="EUR">欧元</option>
+                                                <option value="CNY">人民币</option>
+                                                <option value="HKD">港元</option>
+                                                <option value="TWD">新台币</option>
+                                            </select>
+                                            <div class="input-group mb-3">
+                                                <input type="number" class="form-control form-control" id="amount"
+                                                       placeholder="发送数量" min="0" value="1">
+                                                <div class="input-group-append" style="width: 50%;overflow: hidden;">
+                                                    <span class="input-group-text w-100 px-0 d-table-row"
+                                                          id="basic-addon2" style="text-align: left;">
+                                                        <span class="d-table-cell pr-1">@ETH:</span>
+                                                        <span id="eth_amount" class="d-table-cell">0</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <div class="row mb-2" id="currencies">
+                                        <div class="col-12 mb-2">实时价值参考<br>
+                                            <small style="font-size: xx-small">来源:coinmarketcap.com，每10秒更新，点击高亮</small>
+                                        </div>
+                                        <div class="col-4 mb-2 text-left" data-code="BTC">比特币：<br><span
+                                                data-no="1">0</span>
+                                        </div>
+                                        <div class="col-4 mb-2 text-left" data-code="USD">美元：<br><span
+                                                data-no="2">0</span>
+                                        </div>
+                                        <div class="col-4 mb-2 text-left" data-code="EUR">欧元：<br><span
+                                                data-no="3">0</span>
+                                        </div>
+                                        <div class="col-4 mb-2 text-left" data-code="CNY">人民币：<br><span
+                                                data-no="4">0</span>
+                                        </div>
+                                        <div class="col-4 mb-2 text-left" data-code="HKD">港元：<br><span
+                                                data-no="6">0</span>
+                                        </div>
+                                        <div class="col-4 mb-2 text-left" data-code="TWD">新台币：<br><span
+                                                data-no="5">0</span>
+                                        </div>
+                                    </div>
+                                    <form id="SrcAndDst" class="text-left">
+                                        <fieldset class="form-group text-truncate">
+                                            <div class="row">
+                                                <legend class="col-form-label col-3 pt-0 text-center">发出<br>(余额)
+                                                </legend>
+                                                <div class="col-9 pl-0">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="src"
+                                                               id="srcCotoken" value="cotoken" checked>
+                                                        <label class="form-check-label d-table-row" for="srcCotoken">
+                                                            <span class="d-table-cell text-right pr-1">coToken: </span>
+                                                            <span id="cotoken" class="d-table-cell">0</span>
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="src"
+                                                               id="srcETH" value="eth">
+                                                        <label class="form-check-label" style="padding-left: .6rem;"
+                                                               for="srcETH">
+                                                            <span class="d-table-cell text-right pr-1">以太币: </span>
+                                                            <span id="eth" class="d-table-cell">0</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset class="form-group">
+                                            <div class="row">
+                                                <legend class="col-form-label col-3 pt-0">接收</legend>
+                                                <div class="col-9 pl-0">
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="radio" name="dst"
+                                                               id="dstCotoken" value="cotoken" checked>
+                                                        <label class="form-check-label" for="dstCotoken">
+                                                            coToken
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="radio" name="dst"
+                                                               id="dstETH" value="eth">
+                                                        <label class="form-check-label" for="dstETH">
+                                                            以太币
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </form>
+                                    <div class="row">
+                                        <div id="sendOk" class="alert alert-success col-auto mx-auto"
+                                             style="display: none;z-index: 100;" role="alert">发送成功
+                                        </div>
+                                    </div>
+                                    <div class="text-center mb-3">
+                                        <button class="btn btn-primary p-3" id="sendBtn"> 发送 <i
+                                                class="fas fa-share-square"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="download" role="tabpanel" aria-labelledby="download-tab">
+                                <div class="text-center px-0">
+                                    <div>For Android <i class="fab fa-android"
+                                                        style="font-size: 3rem;color: green;"></i></div>
+                                    <div id="dlCode" class="my-2"></div>
+                                    <div>
+                                        <small><a href="https://hifus.github.io/coToken_v0.2.4.apk" id="app_link">https://hifus.github.io/coToken_v0.2.4.apk</a>
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <small>请在浏览器中打开以上链接<br>或将链接复制到浏览器中</small>
+                                    </div>
+                                    <div class="mt-2"><a id="copy" href="#">点此复制链接</a></div>
+                                    <div id="copy_ok" class="alert alert-success"
+                                         style="position: absolute;top: 50%;left: 50%;display: none;" role="alert">
+                                        已复制到剪贴板
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="loadingSpinner" class="d-none">
+                            <div id="loadingText" class="d-none waiting">正在连接MetaMask...</div>
+                            <noscript>
+                                此页面需要执行Javascript。
+                            </noscript>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="ScanModal" tabindex="-1" role="dialog" aria-labelledby="ScanModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title mx-auto" id="ScanModalLabel">扫描二维码</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="text-right d-none"
+                     style="margin-bottom: -34px;margin-right: 2px;position: relative; line-height: 1px;z-index: 100;">
+                    <i class="fas fa-sync-alt" id="change" style="font-size: 32px;"></i>
+                </div>
+                <div id="camera"></div>
+                <canvas id="qr-canvas" class="d-none"></canvas>
+                <button type="button" class="btn btn-secondary mx-auto d-block" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=" crossorigin="anonymous"></script>
+<script src="js/alertify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"
+        integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.5.2/bluebird.min.js"
+        integrity="sha256-KxHSEnmbcOfmmoeGOLsNUpBeOrNbssSJ3fyskCGsN6M=" crossorigin="anonymous"></script>
+<script src="js/contracts.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/qrcode.min.js"></script>
+<script src="js/qrcode.lib.min.js"></script>
+<script src="js/qrcode2.js"></script>
+<script src="js/adapter.js"></script>
+<script src="js/face2face.js"></script>
+</body>
+</html>

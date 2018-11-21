@@ -46,6 +46,31 @@ function showTips(tips, time) {
     });
 }
 
+function is_iOS() {
+    return navigator.userAgent.match(/(iPhone|iPod|iPad);/i);
+}
+
+function copy($node) {
+    if (is_iOS()) {//区分iPhone设备
+        window.getSelection().removeAllRanges();//这段代码必须放在前面否则无效
+        var range = document.createRange();
+        // 选中需要复制的节点
+        range.selectNode($node[0]);
+        // 执行选中元素
+        window.getSelection().addRange(range);
+        // 执行 copy 操作
+        var successful = document.execCommand('copy');
+
+        // 移除选中的元素
+        window.getSelection().removeAllRanges();
+    } else {
+        var i = $('<input type="text" style="position:absolute;top:-1000rem;">').appendTo(document.body).val($node.text());
+        i.select();
+        document.execCommand("Copy"); // 执行浏览器复制命令
+        i.remove();
+    }
+}
+
 function makeTxnCallback(callback, atOnce) {
     function _showError(err) {
         if (err !== 'cancelled') {

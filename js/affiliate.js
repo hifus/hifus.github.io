@@ -121,27 +121,6 @@ var abi = [
     }
 ];
 
-function copy($node) {
-    if (navigator.userAgent.match(/(iPhone|iPod|iPad);/i)) {//区分iPhone设备
-        window.getSelection().removeAllRanges();//这段代码必须放在前面否则无效
-        var range = document.createRange();
-        // 选中需要复制的节点
-        range.selectNode($node[0]);
-        // 执行选中元素
-        window.getSelection().addRange(range);
-        // 执行 copy 操作
-        var successful = document.execCommand('copy');
-
-        // 移除选中的元素
-        window.getSelection().removeAllRanges();
-    } else {
-        var i = $('<input type="text" style="position:absolute;top:-1000rem;">').appendTo(document.body).val($node.text());
-        i.select();
-        document.execCommand("Copy"); // 执行浏览器复制命令
-        i.remove();
-    }
-}
-
 function refreshData() {
     blockchain.getInfo().then(function (promises) {
         $('#inferior_count').text(promises[0].valueOf());
@@ -169,10 +148,6 @@ function refreshData() {
 }
 
 function onJoinButtonSubmit() {
-	if (new Date().getTime() < 1542283200000) {
-        alertify.alert('20:00后开启');
-        return;
-    }
     var address = $('#superior').val();
     if (isValidAddress(address)) {
         properties.Contract.register(address, {gas: 400000}, makeTxnCallback(function () {
