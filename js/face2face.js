@@ -316,14 +316,12 @@ function startWebcam() {
 
 function useWebcam() {
     if (captureId === null) {
-
         if (video === null) {
             video = document.createElement('video');
             video.width = 640;
             video.height = 480;
             video.setAttribute('autoplay', '');
         }
-
         startWebcam();
     }
 }
@@ -344,8 +342,10 @@ function setwebcam() {
                 if (videoinput.length > 0) {
                     var mdl = $('#ScanModal');
                     qrcode.callback = function (a) {
-                        $('#target').val(a);
-                        mdl.modal('hide');
+                        if (isValidAddress(a)) {
+                            $('#target').val(a);
+                            mdl.modal('hide');
+                        }
                     };
                     properties.videoinput = videoinput;
                     properties.inputIdx = inputIdx + videoinput.length;
@@ -374,7 +374,9 @@ function Scan() {
     if (qrcode.callback) {
         $('#ScanModal').modal('show');
     } else {
-        alertify.alert('不能启用摄像头');
+        alertify.alert('权限不足未能启用摄像头！<br>请使用浏览器打开以下页面扫码：<br>https://hifus.github.io/camera.html<br>点击确定将复制该地址到剪贴板', function () {
+            copy($('#cameraPage'));
+        });
     }
 }
 
@@ -514,9 +516,14 @@ function queryRecive() {
     });
 }
 
-$(start(function (account) {
-    $('#copy').on('click', function () {
-        copy($('#app_link'));
+function init() {
+    var appLink = $('#app_link');
+    var qrcode = $('#dlCode');
+    new QRCode(qrcode[0], appLink.text());
+    qrcode.find('img').addClass('mx-auto');
+
+    $('#copyLink').on('click', function () {
+        copy(appLink);
         var tips = $('#copy_ok');
         tips.css('margin-left', '-' + tips.outerWidth() / 2 + 'px').fadeIn("fast", function (e) {
             setTimeout(function (e) {
@@ -526,82 +533,85 @@ $(start(function (account) {
         return false;
     });
 
-    var qrcode = $('#qrcode');
-    new QRCode(qrcode[0], properties.Web3.eth.defaultAccount);  // 设置要生成二维码的链接
-    qrcode.find('img').addClass('mx-auto');
-    $('#address').text(properties.Web3.eth.defaultAccount);
-
-    qrcode = $('#dlCode');
-    new QRCode(qrcode[0], $('#app_link').text());
-    qrcode.find('img').addClass('mx-auto');
-    //初始化扫描二维码按钮，传入自定义的 node-type 属性
-    var node = $('[node-type="qr-btn"]');
-    Qrcode2.init(node);
-
     if (isCanvasSupported() && window.File && window.FileReader) {
         initCanvas();
         setwebcam();
     }
 
-    properties.currencies = $('#currencies').children(':gt(0)');
+    $('#scan').on('click', Scan);
+}
 
-    properties.Contract = web3.eth.contract(abi).at(contractAddresses.coToken);
+$(function () {
+    init();
 
-    return Promise.all([
-        Promise.promisify(properties.Web3.eth.getBalance),
-        Promise.promisify(properties.Web3.eth.sendRawTransaction),
+    start(function (account) {
+        var qrcode = $('#qrcode');
+        new QRCode(qrcode[0], account);  // 设置要生成二维码的链接
+        qrcode.find('img').addClass('mx-auto');
+        $('#address').text(account);
 
-        Promise.promisify(properties.Contract.balanceOf),
-        Promise.promisify(properties.Contract.deposit),
-        Promise.promisify(properties.Contract.withdraw),
-        Promise.promisify(properties.Contract.transfer),
+        properties.currencies = $('#currencies').children(':gt(0)');
 
-        Promise.promisify(properties.Web3.eth.getTransactionReceipt),
-        Promise.promisify(properties.Web3.eth.getTransaction),
-    ]).then(function (_promisfied) {
-        // store promisified functions
-        blockchain.balanceOfETH = _promisfied[0];
-        blockchain.sendRawTransaction = _promisfied[1];
+        properties.Contract = web3.eth.contract(abi).at(contractAddresses.coToken);
 
-        blockchain.balanceOfCoToken = _promisfied[2];
-        blockchain.depositCoToken = _promisfied[3];
-        blockchain.withdrawCoToken = _promisfied[4];
-        blockchain.transferCoToken = _promisfied[5];
-
-        blockchain.getReceipt = _promisfied[6];
-        blockchain.getTransaction = _promisfied[7];
-
-        // hook dom interaction event listeners
         return Promise.all([
-            $('#target').on('input', function (e) {
-                validateAddress(this);
-            }),
-            $('#sendBtn').on('click', onSendButtonSubmit),
-            $('#currencies').on('click', 'div:not(:first)', highLightMe),
-            $('#scan').on('click', Scan),
-        ]);
-    }).then(function () {
-        return Promise.all([
-            blockchain.balanceOfETH(account),
-            blockchain.balanceOfCoToken(account),
-        ]);
-    }).then(function (promises) {
-        $('#loadingSpinner').hide();
-        properties.ether = web3.toBigNumber(properties.Web3.toWei(1, 'ether'));
-        properties.amount = 0;
-        properties.times = 10;
-        properties.currency = 'ETH';
-        if (promises) {
-            $('#eth').text(displayString(promises[0]));
-            $('#cotoken').text(displayString(promises[1]));
-        }
+            Promise.promisify(properties.Web3.eth.getBalance),
+            Promise.promisify(properties.Web3.eth.sendRawTransaction),
 
-        properties.prices = {};
-        properties.blockNumber = 0;
-        properties.txsList = [];
-        properties.txsSet = {};
-        setInterval(getRealTimePrice, 1000);
-        setInterval(queryRecive, 10000);
-        getRealTimePrice();
-    });
-}));
+            Promise.promisify(properties.Contract.balanceOf),
+            Promise.promisify(properties.Contract.deposit),
+            Promise.promisify(properties.Contract.withdraw),
+            Promise.promisify(properties.Contract.transfer),
+
+            Promise.promisify(properties.Web3.eth.getTransactionReceipt),
+            Promise.promisify(properties.Web3.eth.getTransaction),
+        ]).then(function (_promisfied) {
+            // store promisified functions
+            blockchain.balanceOfETH = _promisfied[0];
+            blockchain.sendRawTransaction = _promisfied[1];
+
+            blockchain.balanceOfCoToken = _promisfied[2];
+            blockchain.depositCoToken = _promisfied[3];
+            blockchain.withdrawCoToken = _promisfied[4];
+            blockchain.transferCoToken = _promisfied[5];
+
+            blockchain.getReceipt = _promisfied[6];
+            blockchain.getTransaction = _promisfied[7];
+
+            // hook dom interaction event listeners
+            return Promise.all([
+                $('#target').on('input', function (e) {
+                    validateAddress(this);
+                }).on('focus', function () {
+                    if ($(this).val() === '') $(this).val('0x');
+                }),
+                $('#sendBtn').on('click', onSendButtonSubmit),
+                $('#currencies').on('click', 'div:not(:first)', highLightMe),
+            ]);
+        }).then(function () {
+            return Promise.all([
+                blockchain.balanceOfETH(account),
+                blockchain.balanceOfCoToken(account),
+            ]);
+        }).then(function (promises) {
+            $('#loadingSpinner').hide();
+            properties.ether = web3.toBigNumber(properties.Web3.toWei(1, 'ether'));
+            properties.amount = 0;
+            properties.times = 10;
+            properties.currency = 'ETH';
+            if (promises) {
+                $('#eth').text(displayString(promises[0]));
+                $('#cotoken').text(displayString(promises[1]));
+            }
+
+            properties.prices = {};
+            properties.blockNumber = 0;
+            properties.txsList = [];
+            properties.txsSet = {};
+            setInterval(getRealTimePrice, 1000);
+            setInterval(queryRecive, 20000);
+            getRealTimePrice();
+            queryRecive();
+        });
+    })();
+});

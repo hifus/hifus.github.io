@@ -62,30 +62,15 @@
             margin-left: .3rem;
         }
 
-        .jsbridge {
-            height: 200px;
-            width: 200px;
-            background-color: red;
-        }
-
-        .upimg {
-            height: 200px;
-            width: 200px;
-            background-color: green;
-            margin-bottom: 50px;
-        }
-
         .qr-btn {
+            position: relative;
+            top: -2.5rem;
+            float: right;
+            margin-right: 2px;
+            margin-top: -2px;
             width: 2.5rem;
             height: 2.5rem;
-            white-space: normal;
-            vertical-align: top;
-            line-height: 2;
             border: 0;
-        }
-
-        input[node-type=jsbridge] {
-            visibility: hidden;
         }
 
         #currencies > div {
@@ -157,11 +142,8 @@
                                                       aria-describedby="targetHelp"></textarea>
                                             <span id="targetHelp" class="form-text text-muted"
                                                   style="display: none;">请填入发送到的目标账号</span>
-                                            <div class="text-right"
-                                                 style="margin-top: -2.6rem;margin-right: 0.1rem;border: 0;z-index: 100;">
-                                                <div id="scan" class="qr-btn btn btn-primary px-1 py-1">
-                                                    <i class="fas fa-qrcode" style="font-size: 2rem;"></i>
-                                                </div>
+                                            <div id="scan" class="qr-btn btn btn-primary px-1 py-1">
+                                                <i class="fas fa-qrcode" style="font-size: 2rem;"></i>
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -239,7 +221,7 @@
                                         </fieldset>
                                         <fieldset class="form-group">
                                             <div class="row">
-                                                <legend class="col-form-label col-3 pt-0">接收</legend>
+                                                <legend class="col-form-label col-3 pt-0 text-center">接收</legend>
                                                 <div class="col-9 pl-0">
                                                     <div class="form-check form-check-inline">
                                                         <input class="form-check-input" type="radio" name="dst"
@@ -283,7 +265,7 @@
                                     <div>
                                         <small>请在浏览器中打开以上链接<br>或将链接复制到浏览器中</small>
                                     </div>
-                                    <div class="mt-2"><a id="copy" href="#">点此复制链接</a></div>
+                                    <div class="mt-2"><a id="copyLink" href="#">点此复制链接</a></div>
                                     <div id="copy_ok" class="alert alert-success"
                                          style="position: absolute;top: 50%;left: 50%;display: none;" role="alert">
                                         已复制到剪贴板
@@ -322,6 +304,7 @@
         </div>
     </div>
 </div>
+<div id="cameraPage" class="d-none">https://hifus.github.io/camera.html</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
         integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"
@@ -335,7 +318,6 @@
 <script src="js/utils.js"></script>
 <script src="js/qrcode.min.js"></script>
 <script src="js/qrcode.lib.min.js"></script>
-<script src="js/qrcode2.js"></script>
 <script src="js/adapter.js"></script>
 <script src="js/face2face.js"></script>
 </body>

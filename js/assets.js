@@ -694,7 +694,7 @@ function onTradeButtonSubmit() {
 
 function onMoveButtonSubmit() {
     if (properties.isTransferableFUS) {
-    	$('#FusModal').modal('show');
+        $('#FusModal').modal('show');
     } else {
         alertify.alert('暂不允许转移');
     }
@@ -710,6 +710,30 @@ $(start(function (account) {
     properties.CoTokenContract = web3.eth.contract(coTokenAbi).at(contractAddresses.coToken);
     properties.FusContract = web3.eth.contract(FusAbi).at(contractAddresses.Fus);
     properties.DelegateContract = web3.eth.contract(delegateAbi).at(contractAddresses.FusPeerDelegate);
+
+    function f(promises) {
+        if (promises) {
+            properties.flag++;
+            switch (properties.flag) {
+                case 1:
+                    var len = promises.length;
+                    for (var i = 0; i < len; ++i) {
+                        var tr = properties.trs[i];
+                        tr.data('fus', promises[i]);
+                        var a = promises[i].div(properties.ether).toNumber();
+                        tr.find('td').eq(1).text((a > 1) ? a.toPrecision(10) : a.toFixed(9));
+                    }
+                    return Promise.all(properties.apps);
+                case 2:
+                    blockchain.apps = promises;
+                    return Promise.all($.makeArray($.map(promises, function (p, i) {
+                        return p();
+                    })));
+                case 3:
+                    fillDividendsTable(promises);
+            }
+        }
+    }
 
     return Promise.all([
         Promise.promisify(properties.Web3.eth.getBalance),
@@ -777,7 +801,7 @@ $(start(function (account) {
             blockchain.getValidFus(),
             blockchain.isTransferableFUS(),
         ]);
-    }).then(async function (promises) {
+    }).then(function (promises) {
         $('#loadingSpinner').hide();
         properties.ether = web3.toBigNumber(properties.Web3.toWei(1, 'ether'));
         if (promises) {
@@ -787,7 +811,7 @@ $(start(function (account) {
             properties.fus = promises[2];
             $('#fus').text(promises[2].div(properties.ether).toNumber());
             $('#dividends').text(promises[3].div(properties.ether).toNumber());
-            $('#dividend_date').text(promises[4].gt(10 ** 20) ? '未确定' : (new Date(promises[4].toNumber() * 1000)).toLocaleString());
+            $('#dividend_date').text(promises[4].gt(Math.pow(10, 20)) ? '未确定' : (new Date(promises[4].toNumber() * 1000)).toLocaleString());
             properties.validFus = promises[5];
             properties.isTransferableFUS = promises[6];
             var tbl = $('#tbl');
@@ -795,53 +819,47 @@ $(start(function (account) {
             var last = tbl.children();
             var apps = [];
             properties.appContracts = [];
+            var validHolders = [];
+            properties.validHolderCount = 0;
+            properties.trs = [];
 
-            await (async function() {
-                var len = items.length;
-                for (var i = 0; i < len; ++i) {
-                    var it = items[i];
+            var len = items.length;
+            for (var i = 0; i < len; ++i) {
+                var it = items[i];
 
-                    it[1] = contractAddresses[it[1]];
-                    var tr = $('<tr><td></td><td></td><td></td></tr>').insertBefore(last);
-                    it.push(tr);
-                    var tds = tr.find('td');
-                    if (it[3]) {
-                        $('<a></a>').attr('href', it[3]).text(it[0]).appendTo(tds[0]);
-                    } else {
-                        tds.eq(0).text(it[0]);
-                    }
-
-                    if (it[2]) {
-                        tr.data('fus', properties.validFus);
-                        var a = properties.validFus.div(properties.ether).toNumber();
-                        tds.eq(1).text((a > 1) ? a.toPrecision(10) : a.toFixed(9));
-                    } else {
-                        await blockchain.validHolders(it[1]).then(async function (promises) {
-                            tr.data('fus', promises);
-                            console.log(promises.valueOf());
-                            var a = promises.div(properties.ether).toNumber();
-                            tds.eq(1).text((a > 1) ? a.toPrecision(10) : a.toFixed(9));
-                        });
-                    }
-                    var contract = web3.eth.contract(appAbi).at(it[1]);
-                    properties.appContracts.push(contract);
-                    apps.push(Promise.promisify(contract.getFusDividends));
-                    apps.push(Promise.promisify(contract.canTakeFusDividends));
+                it[1] = contractAddresses[it[1]];
+                var tr = $('<tr><td></td><td></td><td></td></tr>').insertBefore(last);
+                it.push(tr);
+                var tds = tr.find('td');
+                if (it[3]) {
+                    $('<a></a>').attr('href', it[3]).text(it[0]).appendTo(tds[0]);
+                } else {
+                    tds.eq(0).text(it[0]);
                 }
-            })();
 
-            return Promise.all(apps);
+                if (it[2]) {
+                    tr.data('fus', properties.validFus);
+                    var a = properties.validFus.div(properties.ether).toNumber();
+                    tds.eq(1).text((a > 1) ? a.toPrecision(10) : a.toFixed(9));
+                } else {
+                    properties.validHolderCount++;
+                    validHolders.push(blockchain.validHolders(it[1]));
+                    properties.trs.push(tr);
+                }
+                var contract = web3.eth.contract(appAbi).at(it[1]);
+                properties.appContracts.push(contract);
+                apps.push(Promise.promisify(contract.getFusDividends));
+                apps.push(Promise.promisify(contract.canTakeFusDividends));
+            }
+
+            if (properties.validHolderCount) {
+                properties.apps = apps;
+                properties.flag = 0;
+                return Promise.all(validHolders);
+            } else {
+                properties.flag = 1;
+                return Promise.all(apps);
+            }
         }
-    }).then(function (_promisfied) {
-        if (_promisfied) {
-            blockchain.apps = _promisfied;
-            return Promise.all($.makeArray($.map(_promisfied, function (p, i) {
-                return p();
-            })));
-        }
-    }).then(function (promises) {
-        if (promises) {
-            fillDividendsTable(promises);
-        }
-    });
+    }).then(f).then(f).then(f);
 }));
