@@ -13,11 +13,14 @@ window.blockchain = {};
 window.info = {};
 
 function validateAddress(ipt) {
-    var address = $(ipt).val(), l = 0, len = address.length;
+    var address = $(ipt).val(), l = 0;
     if (address[0] === '0') {
         ++l;
         if (address[1] === 'x') {
             ++l;
+            if (address[2] === '0' && address[3] === 'x') {
+                address = address.substr(2);
+            }
             while (l < 42) {
                 var c = address.charCodeAt(l);
                 if ((c >= 0x30 && c <= 0x39) || (c >= 0x41 && c <= 0x46) || (c >= 0x61 && c <= 0x66)) {
