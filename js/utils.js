@@ -123,7 +123,7 @@ function start(f) {
 
         function work() {
             if (properties.Web3.eth.accounts.length > 0) {
-                var account = properties.Web3.eth.accounts[0];
+                var account = properties.Web3.eth.accounts[0].toLowerCase();
                 properties.Web3.eth.defaultAccount = account;
 
                 f(account, loadingText).catch(function (err) {

@@ -94,6 +94,27 @@ var abi = [
         "type": "function"
     }
 ];
+var affAbi = [
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_addr",
+                "type": "address"
+            }
+        ],
+        "name": "isRegistered",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    }
+];
 
 function displayString2(v) {
     if (v >= 1) {
@@ -153,15 +174,37 @@ function onSendButtonSubmit() {
     };
 
     var dst = $('#target').val();
+
+    var _realSend = function (dst, amount) {
+        if (amount >= 10) {
+            alertify.confirm('发送数量为：' + amount + ' ETH，请注意风险！\n你确定发送吗？', function () {
+                _send(dst, amount);
+            });
+        } else {
+            _send(dst, amount);
+        }
+    };
+
     if (isValidAddress(dst)) {
         var amount = $('#eth_amount').data('value');
         if (amount > 0) {
-            if (amount >= 10) {
-                alertify.confirm('发送数量为：' + amount + ' ETH，请注意风险！\n你确定发送吗？', function () {
-                    _send(dst, amount);
-                });
+            if ($('#dstCotoken').is(':checked')) {
+                _realSend(dst, amount);
             } else {
-                _send(dst, amount);
+                checkContract(function (danger) {
+                    if (danger) {
+                        var c='danger';
+                        alertify.confirm('目标地址是合约！<br>向其发送以太币，将触发其回调函数，产生安全风险！<br>建议向该地址发送coToken，以避免风险！<br>你确定发送以太币吗？', function () {
+                            $('.alertify').removeClass(c);
+                            _realSend(dst, amount);
+                        }, function () {
+                            $('.alertify').removeClass(c);
+                        });
+                        $('.alertify').addClass(c);
+                    } else {
+                        _realSend(dst, amount);
+                    }
+                });
             }
         } else {
             alertify.alert('无效的数量');
@@ -345,6 +388,7 @@ function setwebcam() {
                         if (isValidAddress(a)) {
                             $('#target').val(a);
                             mdl.modal('hide');
+                            checkContract();
                         }
                     };
                     properties.videoinput = videoinput;
@@ -380,8 +424,53 @@ function Scan() {
     }
 }
 
+function checkContract(callback) {
+    var t = $('#target'), addr = t.val().toLowerCase(), danger, c = 'text-danger';
+    if (isValidAddress(addr)) {
+        danger = properties.contracts[addr];
+        if (danger === true) {
+            t.addClass(c);
+            if (callback) callback(danger);
+        } else if (danger === false) {
+            t.removeClass(c);
+            if (callback) callback(danger);
+        } else {
+            blockchain.getCode(addr).then(function (p) {
+                var danger = p.length > 2;
+                properties.contracts[addr] = danger;
+                if (t.val().toLowerCase() === addr) {
+                    if (danger) {
+                        t.addClass(c);
+                        if (callback) callback(danger);
+                    } else {
+                        t.removeClass(c);
+                        if (callback) callback(danger);
+                    }
+                }
+            });
+        }
+    } else {
+        t.removeClass(c);
+    }
+}
+
+function makeLink(addr) {
+    if (properties.isRegistered) return addr;
+    var reg = properties.senderRegistered[addr];
+    if (reg === false) {
+        return addr;
+    } else if (reg === true) {
+        return '<a href="https://hifus.github.io/a.html?' + addr + '">' + addr + '</a>';
+    } else {
+        blockchain.isRegistered(addr).then(function (r) {
+            properties.senderRegistered[addr] = r;
+        });
+        return addr;
+    }
+}
+
 function makeReceiveList() {
-    var account = properties.Web3.eth.defaultAccount;
+    var account = properties.Web3.eth.defaultAccount.toLowerCase();
     var r = $('#receives').empty(), n = properties.txsList.length, i, j, tx, s, v;
     for (i = 0, j = 0; i < n && j < 20; ++i) {
         tx = properties.txsList[i];
@@ -389,7 +478,7 @@ function makeReceiveList() {
         if (tx.txnType === 0) {
             if (tx.status !== 1) continue;
         } else {
-            if (tx.from === contractAddresses.coToken) continue;
+            if (tx.from === null || tx.from === contractAddresses.coToken) continue;
         }
 
         ++j;
@@ -400,7 +489,7 @@ function makeReceiveList() {
             '<div class="col-1 text-left font-weight-bold pr-0">' + j + '</div>\n' +
             '<div class="col-2 text-left font-weight-bold pr-0">' + timestampString(tx.timeStamp) + '</div>\n' +
             '<div class="col-8 text-right font-weight-bold pr-0">' + displayString(tx.value) + ((tx.txnType < 2) ? ' ETH' : ' coToken') + '</div>\n' +
-            '<div class="col-12 text-left">' + tx.from + '</div>\n' +
+            '<div class="col-12 text-left">' + makeLink(tx.from) + '</div>\n' +
             '<div class="col-4 text-left">比特币：<br>\n' +
             '<span>' + displayString(properties.prices['BTC'] * tx.value) + '</span>\n' +
             '</div>\n' +
@@ -438,6 +527,12 @@ function getValidTxn() {
                 arr.push(blockchain.getReceipt(tx.hash));
                 ++j;
             }
+        } else if (tx.txnType === 1) {
+            if (tx.from === null) {
+                properties.dealing.push(tx.hash);
+                arr.push(blockchain.getTransaction(tx.hash));
+                ++j;
+            }
         } else {
             if (tx.from === contractAddresses.coToken) {
                 properties.dealing.push(tx.hash);
@@ -447,30 +542,32 @@ function getValidTxn() {
         }
     }
 
-    Promise.all(arr).then(function (promises) {
-        if (promises && promises.length > 0) {
-            var i, tx, p;
-            for (i = 0; i < 5; ++i) {
-                tx = properties.txsSet[properties.dealing[i]];
-                p = promises[i];
-                if (tx.txnType === 0) {
-                    tx.status = parseInt(p.status);
-                } else {
-                    tx.from = p.from;
+    if (j > 0) {
+        Promise.all(arr).then(function (promises) {
+            if (promises && promises.length > 0) {
+                var i, tx, p, n = properties.dealing.length;
+                for (i = 0; i < 5 && i < n; ++i) {
+                    tx = properties.txsSet[properties.dealing[i]];
+                    p = promises[i];
+                    if (tx.txnType === 0) {
+                        tx.status = parseInt(p.status);
+                    } else {
+                        tx.from = p.from;
+                    }
                 }
             }
-        }
 
-        i = makeReceiveList();
-        if (i < properties.txsList.length && i < 20) {
-            getValidTxn();
-        }
-    });
+            i = makeReceiveList();
+            if (i < properties.txsList.length && i < 20) {
+                getValidTxn();
+            }
+        });
+    }
 }
 
 function queryRecive() {
     var apikey = '539FB26X6S5ZPTUQ8U6SIFYIFQC1FY8KUT';
-    var account = properties.Web3.eth.defaultAccount;
+    var account = properties.Web3.eth.defaultAccount.toLowerCase();
     var prefix = 'https://api.etherscan.io/api?module=account&address=' + account + '&startblock=' + properties.blockNumber + '&page=1&offset=100&sort=desc&apikey=' + apikey + '&action=';
 
     //E2E
@@ -491,28 +588,33 @@ function queryRecive() {
                 var bn = parseInt(p.result[0].blockNumber);
                 if (properties.blockNumber < bn) properties.blockNumber = bn;
                 txsList = txsList.concat($.grep(p.result, function (tx, j) {
-                    if (tx.to === account) {
+                    if (tx.to === account && (i === 2 || (tx.isError === '0' && tx.from !== account))) {
+                        if (i === 1) {
+                            tx.contract = tx.from;
+                            tx.from = null;
+                        }
                         tx.txnType = i;
                         tx.timeStamp = parseInt(tx.timeStamp);
                         properties.txsSet[tx.hash] = tx;
                         return true;
-                    } else {
-                        return false;
                     }
+                    return false;
                 }));
             }
         });
 
-        txsList.sort(function (a, b) {
-            if (b.timeStamp > a.timeStamp) return 1;
-            if (b.timeStamp < a.timeStamp) return -1;
-            return 0;
-        });
+        if (txsList.length) {
+            txsList.sort(function (a, b) {
+                if (b.timeStamp > a.timeStamp) return 1;
+                if (b.timeStamp < a.timeStamp) return -1;
+                return 0;
+            });
 
-        properties.txsList = txsList.concat(properties.txsList);
-        properties.blockNumber++;
+            properties.txsList = txsList.concat(properties.txsList);
+            properties.blockNumber++;
 
-        getValidTxn();
+            getValidTxn();
+        }
     });
 }
 
@@ -539,6 +641,12 @@ function init() {
     }
 
     $('#scan').on('click', Scan);
+    $('#target').on('input', function (e) {
+        validateAddress(this);
+        checkContract();
+    }).on('focus', function () {
+        if ($(this).val() === '') $(this).val('0x');
+    });
 }
 
 $(function () {
@@ -553,6 +661,7 @@ $(function () {
         properties.currencies = $('#currencies').children(':gt(0)');
 
         properties.Contract = web3.eth.contract(abi).at(contractAddresses.coToken);
+        properties.AffiliateContract = web3.eth.contract(affAbi).at(contractAddresses.Affiliate);
 
         return Promise.all([
             Promise.promisify(properties.Web3.eth.getBalance),
@@ -565,6 +674,8 @@ $(function () {
 
             Promise.promisify(properties.Web3.eth.getTransactionReceipt),
             Promise.promisify(properties.Web3.eth.getTransaction),
+            Promise.promisify(properties.AffiliateContract.isRegistered),
+            Promise.promisify(properties.Web3.eth.getCode),
         ]).then(function (_promisfied) {
             // store promisified functions
             blockchain.balanceOfETH = _promisfied[0];
@@ -577,14 +688,11 @@ $(function () {
 
             blockchain.getReceipt = _promisfied[6];
             blockchain.getTransaction = _promisfied[7];
+            blockchain.isRegistered = _promisfied[8];
+            blockchain.getCode = _promisfied[9];
 
             // hook dom interaction event listeners
             return Promise.all([
-                $('#target').on('input', function (e) {
-                    validateAddress(this);
-                }).on('focus', function () {
-                    if ($(this).val() === '') $(this).val('0x');
-                }),
                 $('#sendBtn').on('click', onSendButtonSubmit),
                 $('#currencies').on('click', 'div:not(:first)', highLightMe),
             ]);
@@ -592,6 +700,7 @@ $(function () {
             return Promise.all([
                 blockchain.balanceOfETH(account),
                 blockchain.balanceOfCoToken(account),
+                blockchain.isRegistered(account),
             ]);
         }).then(function (promises) {
             $('#loadingSpinner').hide();
@@ -602,14 +711,17 @@ $(function () {
             if (promises) {
                 $('#eth').text(displayString(promises[0]));
                 $('#cotoken').text(displayString(promises[1]));
+                properties.isRegistered = promises[2];
             }
 
             properties.prices = {};
             properties.blockNumber = 0;
             properties.txsList = [];
             properties.txsSet = {};
+            properties.senderRegistered = {};
+            properties.contracts = {};
             setInterval(getRealTimePrice, 1000);
-            setInterval(queryRecive, 20000);
+            setInterval(queryRecive, 30000);
             getRealTimePrice();
             queryRecive();
         });

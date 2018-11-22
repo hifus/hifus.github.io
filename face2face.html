@@ -11,6 +11,17 @@
           integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous"/>
     <link rel="stylesheet" href="css/alertify.css"/>
     <style>
+        @font-face {
+            font-family: "FontAwesome";
+            src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.eot"),
+            url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2") format("woff2"),
+            url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff") format("woff"),
+            url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.ttf") format("truetype"),
+            url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.svg") format("svg");
+            font-weight: normal;
+            font-style: normal
+        }
+
         #loadingSpinner {
             position: absolute;
             width: 100%;
@@ -89,6 +100,35 @@
             height: auto;
             max-width: 100%;
             max-height: 100%;
+        }
+
+        .alertify.danger .msg {
+            color: red;
+        }
+
+        .alertify.danger .ok {
+            color: red!important;
+        }
+
+        .alertify.danger .ok:after {
+            font-family: "FontAwesome";
+            content: "\f1e2";
+            color: red;
+            font-size: x-large;
+            margin-left: .3rem;
+        }
+
+        .alertify.danger .cancel {
+            color: green!important;
+            border: 1px solid green!important;
+        }
+
+        .alertify.danger .cancel:after {
+            font-family: "FontAwesome";
+            content: "\f00c";
+            color: green;
+            font-size: x-large;
+            margin-left: .3rem;
         }
     </style>
 </head>
