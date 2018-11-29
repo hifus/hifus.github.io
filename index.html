@@ -73,7 +73,7 @@
                     $row = $('<div class="row"></div>').appendTo($hot);
                     $('<hr>').appendTo($hot);
                 }
-                $('<div class="col-4"><div class="text-center"><a><img>' + e[2] + '</a></div></div>').appendTo($row).find('a').attr('href', e[0]).find('img').attr('src', e[1]).attr('alt', e[2] || '');
+                $('<div class="col-4"><div class="text-center"><a><img><br>' + e[2] + '</a></div></div>').appendTo($row).find('a').attr('href', e[0]).find('img').attr('src', e[1]).attr('alt', e[2] || '');
             });
         }
         if (typeof announcement !== 'undefined') {
