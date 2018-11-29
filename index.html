@@ -8,6 +8,12 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
           integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous"/>
+    <style>
+        #hot a {
+            color: black;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark"><a class="navbar-brand" href="#">更多功能</a>
@@ -37,11 +43,11 @@
     <div class="container">
         <div class="row">
             <div class="col-md-6 col-12" id="hot">
-                <h3>热门应用</h3>
+                <h3 style="color: darkblue;">热门应用</h3>
                 <hr>
             </div>
             <div class="col-md-6 col-sm-12" id="announcement">
-                <h3>公告信息</h3>
+                <h3 style="color: darkblue;">公告信息</h3>
                 <hr>
             </div>
         </div>
@@ -67,7 +73,7 @@
                     $row = $('<div class="row"></div>').appendTo($hot);
                     $('<hr>').appendTo($hot);
                 }
-                $('<div class="col-4"><div class="text-center"><a><img></a></div></div>').appendTo($row).find('a').attr('href', e[0]).find('img').attr('src', e[1]).attr('alt', e[2] || '');
+                $('<div class="col-4"><div class="text-center"><a><img>' + e[2] + '</a></div></div>').appendTo($row).find('a').attr('href', e[0]).find('img').attr('src', e[1]).attr('alt', e[2] || '');
             });
         }
         if (typeof announcement !== 'undefined') {
@@ -76,7 +82,7 @@
                 var $d = $('<div class="row no-gutters"><div class="col-8"><h4></h4></div><div class="col-4"><h6 class="text-right"><span aria-hidden="true"></span></h6></div></div>').appendTo($announcement);
                 $d.find('h4').text(e[0]);
                 $d.find('h6').append(document.createTextNode(e[1]));
-                if(e[3]) {
+                if (e[3]) {
                     $('<p></p>').appendTo($announcement).html(e[2]);
                 } else {
                     $('<p></p>').appendTo($announcement).text(e[2]);

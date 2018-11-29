@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Last Winner 2</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css"
+          integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="css/alertify.css"/>
+    <style>
+        #loadingSpinner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, .85);
+            display: block;
+            opacity: 1;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        #loadingSpinner > * {
+            color: rgba(0, 0, 0, .87);
+            z-index: 1000;
+            position: absolute;
+            left: 0;
+            top: 45%;
+            width: 100%;
+            text-align: center;
+            font-size: x-large;
+        }
+
+        #loadingText.waiting {
+            top: 30%;
+            padding-top: 5rem;
+        }
+
+        #loadingText.waiting:before {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 50%;
+            background-image: url('images/loader_gray.gif');
+            background-size: 4.57142857rem 4.57142857rem;
+            width: 4.57142857rem;
+            height: 4.57142857rem;
+            margin: 0 0 0 -2.28571429rem;
+        }
+
+        #rewards {
+            text-shadow: 0 0 5px #f5dd03, 0 0 20px #fb0505f0, 0 0 10px #f50303;
+            color: #faca33;
+            font-size: 4rem;
+        }
+
+        .alertify {
+            z-index: 100;
+        }
+
+        .barControl {
+            margin: 0 auto;
+        }
+
+        .barContro_space {
+            margin: 10px 0 0;
+            background: grey;
+            border-radius: 5px;
+        }
+
+        .vader {
+            border-radius: 2px;
+            display: block;
+            width: 0;
+            box-shadow: 0 0 10px 1px #FD4275, 0 0 1px #FD4275, 0 0 1px #FD4275, 0 0 1px #FD4275, 0 0 1px #FD4275, 0 0 1px #FD4275, 0 0 1px #FD4275;
+            background-color: #fff;
+
+            height: 30px;
+            line-height: 1.8rem;
+            color: #f1cb07;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        #nav-history .list-group-item {
+            font-size: small;
+            line-height: 1.5rem;
+        }
+
+        #nav-history .fa-check-circle {
+            color: green;
+        }
+
+        #nav-history .fa-times-circle {
+            color: red;
+        }
+
+        #nav-history .fa-question-circle {
+            color: chocolate;
+        }
+
+        #nav-home h2 {
+            margin-bottom: 1rem;
+        }
+
+        #blocks td {
+            vertical-align: middle;
+            text-align: center;
+        }
+    </style>
+</head>
+<body style="background-color: black; color: gold;">
+<section>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-8 mx-auto">
+                <div class="row mx-0">
+                    <div class="col-12 text-center">
+                        <img src="images/gold.png">
+                        <h1><span id="rewards">0.000000</span></h1>
+                        <div style="margin-top: 20px;" id="vaderSize">
+                            <div>本节目标</div>
+                            <span class="barControl" style="width:30%;">
+                                <div class="barContro_space">
+                                    <span class="vader" style="width: 0;" id="current">0</span>
+                                </div>
+                            </span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 text-left">0</div>
+                            <div class="col-6 text-right" id="goal">0</div>
+                        </div>
+                        <h1 id="countdown" class="mb-0"
+                            style="font-size: 3rem; color: #00ff00; font-family: Monaco; font-weight: 900;">未开始</h1>
+                        <h1 id="countdown2" class="mb-0"
+                            style="display:none; font-size: 1.5rem; color: #00ffff; font-family: Monaco; font-weight: 900;">
+                            距离开始还有<br><span></span>
+                        </h1>
+                    </div>
+                    <div class="text-center col-auto mx-auto px-0 mb-2" style="line-height: 1rem;">
+                        <small>最后玩家：</small>
+                        <br>
+                        <small id="lastPlayer"></small>
+                    </div>
+                    <table class="table table-sm table-dark h6 font-weight-light text-monospace mb-2" id="blocks">
+                        <thead>
+                        <tr>
+                            <td>块号</td>
+                            <td>挖出时间</td>
+                            <td>间隔(秒)</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td scope="row">&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td scope="row">&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td scope="row">&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td scope="row">&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div id="gotFUS" class="alert alert-success col-auto mx-auto"
+                         style="display: none;z-index: 100;" role="alert"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="container text-dark mt-0">
+        <div class="row">
+            <div class="col-12 col-md-6 mx-auto">
+                <div class="jumbotron py-3">
+                    <div class="row text-center">
+                        <hr>
+                        <div class="col-12">
+                            <form id="buyForm">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control text-monospace"
+                                               style="font-size: 1.1rem;"
+                                               id="seed" name="seed" placeholder="@0.002ETH"
+                                               aria-describedby="buyHelp" min="1" max="500" step="1">
+                                        <span id="buyHelp" class="form-text text-muted"
+                                              style="display: none;">请填入您要购买的种子数量</span>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                选择数量
+                                            </button>
+                                            <div class="dropdown-menu" id="seedNum">
+                                                <a class="dropdown-item">1</a>
+                                                <a class="dropdown-item">2</a>
+                                                <a class="dropdown-item">5</a>
+                                                <a class="dropdown-item">10</a>
+                                                <a class="dropdown-item">20</a>
+                                                <a class="dropdown-item">50</a>
+                                                <a class="dropdown-item">100</a>
+                                                <a class="dropdown-item">200</a>
+                                                <a class="dropdown-item">500</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="row">
+                                <div class="col-auto mx-auto px-0" id="addBtns">
+                                    <button class="btn btn-outline-primary">
+                                        +1
+                                    </button>
+                                    <button class="btn btn-outline-primary">
+                                        +5
+                                    </button>
+                                    <button class="btn btn-outline-primary">
+                                        +10
+                                    </button>
+                                    <button class="btn btn-outline-primary">
+                                        +50
+                                    </button>
+                                    <button class="btn btn-outline-primary">
+                                        +100
+                                    </button>
+                                </div>
+                                <div class="col-12">
+                                    <div class="row">
+                                        <div id="buyOk" class="alert alert-success col-auto mx-auto"
+                                             style="display: none;z-index: 100;"
+                                             role="alert">购买成功
+                                        </div>
+                                        <div id="invSeed" class="alert alert-danger col-auto mx-auto"
+                                             style="display: none;z-index: 100;"
+                                             role="alert">无效的种子数量
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 text-left mt-3">
+                                    <h6>投注支出：<span id="cost">0</span>
+                                        <img src="images/gold.png"
+                                             style="height: 2rem;margin-top: -10px;margin-left: 5px;">
+                                    </h6>
+                                    <h6>预期收益：<span id="expectedProfit">0</span>
+                                        <img src="images/gold.png"
+                                             style="height: 2rem;margin: -10px 5px 0;">(<span id="percent">0</span>%)
+                                    </h6>
+                                </div>
+                                <div class="col-sm-4 mx-auto mt-2">
+                                    <button id="buySubmit" class="btn btn-block btn-lg btn-primary">
+                                        马上购买
+                                    </button>
+                                    <div class="text-left">
+                                        <small id="price" style="display: none;"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="loadingSpinner">
+                            <div id="loadingText" class="d-none waiting">正在连接MetaMask...</div>
+                            <noscript>
+                                此页面需要执行Javascript。
+                            </noscript>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 mx-auto">
+                <div style="padding: 1rem 0;margin-bottom: 2rem;background-color: white;border-radius: .3rem;">
+                    <div class="col-12">
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home"
+                                   role="tab" aria-controls="nav-home" aria-selected="true">概览</a>
+                                <a class="nav-item nav-link" id="nav-history-tab" data-toggle="tab" href="#nav-history"
+                                   role="tab" aria-controls="nav-history" aria-selected="false">赢家</a>
+                                <a class="nav-item nav-link" id="nav-role-tab" data-toggle="tab" href="#nav-role"
+                                   role="tab"
+                                   aria-controls="nav-role" aria-selected="false">说明</a>
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-home" role="tabpanel"
+                                 aria-labelledby="nav-home-tab">
+                                <div class="row pt-2">
+                                    <div class="col-12 pt-3">
+                                        <h2>第<span id="round">0</span>轮，第<span id="section">0</span>节</h2>
+                                        <h2>最高收益<span id="times">0</span>倍</h2>
+                                        <hr>
+                                        <h2>预期收益：<br><span id="expected">0</span>
+                                            <img src="images/gold.png"
+                                                 style="height: 3rem;margin-top: -10px;margin-left: 0;">
+                                        </h2>
+                                        <h2>可提收益：<br><span id="profit">0</span>
+                                            <img src="images/gold.png"
+                                                 style="height: 3rem;margin-top: -10px;margin-left: 0;">
+                                        </h2>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <div id="withdrawOk" class="alert alert-success col-auto mx-auto"
+                                                 style="display: none;z-index: 100;" role="alert">提取收益成功
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4 mx-auto mt-2">
+                                        <button id="withdraw" class="btn btn-block btn-lg btn-primary">
+                                            提取收益
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-history" role="tabpanel"
+                                 aria-labelledby="nav-history-tab">
+                                <div class="row">
+                                    <div class="col-12 pt-3">
+                                        <ul class="list-group" id="winners">
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-role" role="tabpanel" aria-labelledby="nav-role-tab">
+                                <div class="row">
+                                    <div class="col-12 pt-3">
+                                        <h5>Last Winner 2 规则说明：</h5>
+                                        <p>1. 游戏中，倒计时开始至倒计时结束称为一轮，每一轮分为若干节。</p>
+                                        <p>2. 倒计时结束前，可以通过买入种子获取收益，在每一节内越早买入则收益越大。</p>
+                                        <p>3. 倒计时结束时，最后买入种子的账号，将会赢得最终大奖，数额是奖池奖金的一半。</p>
+                                        <p>4. 每颗种子需要0.002ETH，每次至少买入1颗。每买入1颗种子，倒计时延长5秒，最多延长至3小时。</p>
+                                        <p>5. 累计购买每满50颗种子，可获得13 FUS的额外奖励，FUS可视作股权用于分红。</p>
+                                        <p>6. 每一节都有目标任务，当达到了目标任务后，节内66.4%资金返还当节玩家，越前的投注收益越大，游戏开始下一节，倒计时也延长120秒。</p>
+                                        <p>7. 若倒计时结束，则当节的积累资金归入奖池，并被Last Winner提取，当节玩家无收益。游戏10分钟后进入新一轮。</p>
+                                        <p>8. 每轮的第一节最大奖励倍数是2，第二节的最大奖励倍数是3，如此类推，直到第100节的最大奖励倍数是101。</p>
+                                        <p>9. 为了防止阻塞区块，游戏有可能开启验奖模式。在验奖模式下，若Last
+                                            Winner是由于故意堵塞区块而产生，则拒绝发放奖金，并将奖金返还奖池。其余结果与正常开奖相同。</p>
+                                        <p>a. 在验奖模式下，设有Gas价格上限，Gas价格超过上限的购买行为会被忽略，资金返还到coToken账号。</p>
+                                        <p>b. 每次购买最大数量为500颗种子，超出部分将返还到coToken账号，但购买次数无限制。</p>
+                                        <p>c. 本游戏所有奖励都发送到coToken账号中，请使用coToken钱包提取为ETH。</p>
+                                        <p>d.
+                                            本游戏部分资金用于FUS分红。向本游戏累计投入0.1ETH即永久获得本游戏分红资格，分红数量按照分红时持有的FUS数量进行计算。本游戏投入不足0.1ETH的账号，所持有的FUS不参与本游戏的分红计算。</p>
+                                        <table class="table table-sm text-center">
+                                            <thead>
+                                            <tr>
+                                                <th colspan="2">资金分配</th>
+                                            </tr>
+                                            <tr>
+                                                <th>用途</th>
+                                                <th>百分比</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr>
+                                                <td>节内分红</td>
+                                                <td>66.4%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>静态奖池</td>
+                                                <td>12%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>FUS分红</td>
+                                                <td>10%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>上级提成</td>
+                                                <td>6%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>上上级提成</td>
+                                                <td>3%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>平台费用</td>
+                                                <td>2.6%</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.5/umd/popper.min.js"
+        integrity="sha256-VTBbuQQf3bpp1u7pm5VrsWn+Wn6chOiW2U1dOMBg9Zs=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=" crossorigin="anonymous"></script>
+<script src="js/alertify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"
+        integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.5.2/bluebird.min.js"
+        integrity="sha256-KxHSEnmbcOfmmoeGOLsNUpBeOrNbssSJ3fyskCGsN6M=" crossorigin="anonymous"></script>
+<script src="js/contracts.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/lastwinner2.js"></script>
+</body>
+</html>
