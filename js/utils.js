@@ -111,7 +111,7 @@ function makeTxnCallback(callback, atOnce) {
                                 }
                             });
                         } else if (callback) {
-                            callback();
+                            callback(receipt);
                         }
                     }
                 });

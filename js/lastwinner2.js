@@ -374,8 +374,12 @@ function onBuyButtonSubmit() {
                 to: contractAddresses.LastWinner2,
                 gas: 1000000,
                 value: cost
-            }, makeTxnCallback(function () {
-                showTips($('#buyOk'));
+            }, makeTxnCallback(function (receipt) {
+                if(receipt.gasUsed>100000) {
+                    showTips($('#buyOk'));
+                } else {
+                    showTips($('#buyFail'), 2500);
+                }
             }));
         } else {
             properties.Contract.buy(cost, {gas: 1000000}, makeTxnCallback(function () {
