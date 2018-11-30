@@ -47,6 +47,15 @@ function timestampString(t) {
     return t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate() + ' ' + t.getHours() + ':' + t.getMinutes() + ':' + t.getSeconds();
 }
 
+function timestampTimeString(t) {
+    if (typeof t === 'number') {
+        t = new Date(t * 1000);
+    } else {
+        t = new Date();
+    }
+    return t.getHours() + ':' + t.getMinutes() + ':' + t.getSeconds();
+}
+
 function showTips(tips, time) {
     if (tips.css('margin-top') === '0px') {
         tips.css('margin-top', '-' + tips.outerHeight(true) + 'px');

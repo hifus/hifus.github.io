@@ -46,6 +46,20 @@ var abi = [
     {
         "constant": true,
         "inputs": [],
+        "name": "totalFunds",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
         "name": "totalPlayers",
         "outputs": [
             {
@@ -326,25 +340,63 @@ function updateData() {
         } else {
             $('#price').text('Gas价格上限为 ' + properties.gasPrice + ' GWei').show();
         }
+
+        $('#now span').text(timestampTimeString());
+        $('#endTime span').text(timestampTimeString(properties.endTime));
     }
+}
+
+function refreshTotal() {
+    blockchain.totalFunds().then(function (promises) {
+        var totalFunds = promises.div(properties.ether).toNumber();
+        if (totalFunds > properties.totalFunds) {
+            properties.totalFunds = totalFunds;
+            $('#totalFunds').text((totalFunds > 1) ? totalFunds.toPrecision(9) : totalFunds.toFixed(8));
+        }
+    });
 }
 
 function refreshData() {
     blockchain.getInfo().then(function (promises) {
         if (promises[7].length === 42) {
-            var n = promises[0], n2;
-            properties.flag = n.mod(properties.div8).toNumber();
-            n = n.div(properties.div8).floor();
-            properties.section = n.mod(properties.div8).toNumber();
-            n = n.div(properties.div8).floor();
-            properties.goal = n.mod(properties.div80);
-            n = n.div(properties.div80).floor();
-            properties.endTime = n.mod(properties.div64).toNumber();
-            n = n.div(properties.div64).floor();
-            properties.startTime = n.mod(properties.div64).toNumber();
-            properties.round = n.div(properties.div64).floor().toNumber();
 
-            properties.rewards = promises[1].div(properties.ether).toNumber();
+            var n = promises[0], n2;
+            var flag = n.mod(properties.div8).toNumber();
+            n = n.div(properties.div8).floor();
+            var section = n.mod(properties.div8).toNumber();
+            n = n.div(properties.div8).floor();
+            var goal = n.mod(properties.div80);
+            n = n.div(properties.div80).floor();
+            var endTime = n.mod(properties.div64).toNumber();
+            n = n.div(properties.div64).floor();
+            var startTime = n.mod(properties.div64).toNumber();
+            var round = n.div(properties.div64).floor().toNumber();
+            var rewards = promises[1].div(properties.ether).toNumber();
+
+            /*if (round < properties.round) {
+                console.log('new round: ' + round + ', old round:' + properties.round);
+                return;
+            }
+            if (round > properties.round) {
+                properties.section = 0;
+            }
+            if (section < properties.section) {
+                console.log('new section: ' + section + ', old section:' + properties.section);
+                return;
+            }
+            if (section === properties.section && rewards < properties.rewards) {
+                console.log('new rewards: ' + rewards + ', old rewards:' + properties.rewards);
+                return;
+            }*/
+
+            properties.flag = flag;
+            properties.section = section;
+            properties.goal = goal;
+            properties.endTime = endTime;
+            properties.startTime = startTime;
+            properties.round = round;
+            properties.rewards = rewards;
+
             properties.current = promises[2];
             properties.expected = promises[3].div(properties.ether).toNumber();
             properties.profit = promises[4].div(properties.ether).toNumber();
@@ -427,6 +479,7 @@ $(start(function (account) {
         Promise.promisify(properties.Web3.eth.getBlockNumber),
         Promise.promisify(properties.Web3.eth.getBlock),
         Promise.promisify(properties.Contract.getWinners),
+        Promise.promisify(properties.Contract.totalFunds),
     ]).then(function (_promisfied) {
         // store promisified functions
         blockchain.getInfo = _promisfied[0];
@@ -436,6 +489,7 @@ $(start(function (account) {
         blockchain.getBlockNumber = _promisfied[4];
         blockchain.getBlock = _promisfied[5];
         blockchain.getWinners = _promisfied[6];
+        blockchain.totalFunds = _promisfied[7];
 
         // hook dom interaction event listeners
         return Promise.all([
@@ -448,6 +502,9 @@ $(start(function (account) {
             $('#withdraw').on('click', onWithdraw),
             $('#addBtns button').on('click', addSeed),
             $('#seedNum a').on('click', setSeed),
+            $('#countdown,#countdown2').on('click', function () {
+                $('#now,#endTime').toggleClass('invisible');
+            })
         ]);
     }).then(function () {
         $('#loadingSpinner').hide();
@@ -464,9 +521,12 @@ $(start(function (account) {
         properties.time = 0;
         properties.gasPrice = 0;
         properties.round = 0;
+        properties.totalFunds = 0;
         setInterval(refreshData, 1000);
         setInterval(updateData, 1000);
+        setInterval(refreshTotal, 30000);
         refreshData();
+        refreshTotal();
 
         /*blockchain.getBlockNumber().then(function (_blockNum) {
             properties.LastBlock = _blockNum;
