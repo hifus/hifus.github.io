@@ -234,9 +234,9 @@ $(start((function () {
                 $('#withdraw').on('click', onWithdrawButtonSubmit),
             ]);
         }).then(function () {
+            $('#loadingSpinner').hide();
             return blockchain.isRegistered(account);
         }).then(function (promises) {
-            $('#loadingSpinner').hide();
             properties.ether = properties.Web3.toWei(1, 'ether');
             if (promises) {
                 $(document.body).addClass('registered');

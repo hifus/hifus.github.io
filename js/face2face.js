@@ -697,13 +697,13 @@ $(function () {
                 $('#currencies').on('click', 'div:not(:first)', highLightMe),
             ]);
         }).then(function () {
+            $('#loadingSpinner').hide();
             return Promise.all([
                 blockchain.balanceOfETH(account),
                 blockchain.balanceOfCoToken(account),
                 blockchain.isRegistered(account),
             ]);
         }).then(function (promises) {
-            $('#loadingSpinner').hide();
             properties.ether = web3.toBigNumber(properties.Web3.toWei(1, 'ether'));
             properties.amount = 0;
             properties.times = 10;

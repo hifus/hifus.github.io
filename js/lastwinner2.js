@@ -369,22 +369,21 @@ function onBuyButtonSubmit() {
     var seed = parseInt($('#seed').val());
     if (seed > 0 && seed <= 500) {
         var cost = properties.price.mul(seed);
+        var f = function (receipt) {
+            if (receipt.gasUsed > 100000) {
+                showTips($('#buyOk'));
+            } else {
+                showTips($('#buyFail'), 2500);
+            }
+        };
         if (properties.cotoken.lt(cost)) {
             properties.Web3.eth.sendTransaction({
                 to: contractAddresses.LastWinner2,
                 gas: 1000000,
                 value: cost
-            }, makeTxnCallback(function (receipt) {
-                if(receipt.gasUsed>100000) {
-                    showTips($('#buyOk'));
-                } else {
-                    showTips($('#buyFail'), 2500);
-                }
-            }));
+            }, makeTxnCallback(f));
         } else {
-            properties.Contract.buy(cost, {gas: 1000000}, makeTxnCallback(function () {
-                showTips($('#buyOk'));
-            }));
+            properties.Contract.buy(cost, {gas: 1000000}, makeTxnCallback(f));
         }
     } else {
         showTips($('#invSeed'));
@@ -410,10 +409,7 @@ function setSeed() {
 }
 
 $(start(function (account) {
-    //$('#price').hide();
-    //$('#countdown2').hide();
     properties.Contract = web3.eth.contract(abi).at(contractAddresses.LastWinner2);
-    //properties.CoToken = web3.eth.contract(coTokenAbi).at(contractAddresses.coToken);
 
     return Promise.all([
         Promise.promisify(properties.Contract.getInfo),
@@ -446,16 +442,8 @@ $(start(function (account) {
             $('#seedNum a').on('click', setSeed),
         ]);
     }).then(function () {
-        return blockchain.getBlockNumber();
-    }).then(function (_blockNum) {
         $('#loadingSpinner').hide();
-        properties.LastBlock = _blockNum;
-        blockchain.getBlock(_blockNum - 1).then(function (block) {
-            if (block) {
-                properties.LastBlockTime = block.timestamp;
-                setInterval(refreshBlock, 1000);
-            }
-        });
+
         properties.ether = web3.toBigNumber(properties.Web3.toWei(1, 'ether'));
         properties.div8 = web3.toBigNumber('0x100');
         properties.div32 = web3.toBigNumber('0x100000000');
@@ -470,5 +458,16 @@ $(start(function (account) {
         setInterval(refreshData, 1000);
         setInterval(updateData, 1000);
         refreshData();
+
+        blockchain.getBlockNumber().then(function(_blockNum){
+            properties.LastBlock = _blockNum;
+            blockchain.getBlock(_blockNum - 1).then(function (block) {
+                if (block) {
+                    properties.LastBlockTime = block.timestamp;
+                    setInterval(refreshBlock, 3000);
+                    refreshBlock();
+                }
+            });
+        });
     });
 }));

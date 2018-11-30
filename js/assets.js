@@ -792,6 +792,7 @@ $(start(function (account) {
             })
         ]);
     }).then(function () {
+        $('#loadingSpinner').hide();
         return Promise.all([
             blockchain.balanceOfETH(account),
             blockchain.balanceOfCoToken(account),
@@ -802,7 +803,6 @@ $(start(function (account) {
             blockchain.isTransferableFUS(),
         ]);
     }).then(function (promises) {
-        $('#loadingSpinner').hide();
         properties.ether = web3.toBigNumber(properties.Web3.toWei(1, 'ether'));
         if (promises) {
             $('#eth').text(promises[0].div(properties.ether).toNumber());

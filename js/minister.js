@@ -134,9 +134,9 @@ $(start(function (account) {
             $('#address').text(account)
         ]);
     }).then(function () {
+        $('#loadingSpinner').hide();
         return blockchain.getInfo();
     }).then(function (promises) {
-        $('#loadingSpinner').hide();
         properties.ether = properties.Web3.toWei(1, 'ether');
         var now = Date.parse(new Date()) / 1000;
         if (promises[4].gt(now)) {
