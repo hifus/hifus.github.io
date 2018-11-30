@@ -128,11 +128,6 @@ function displayString(v) {
     return displayString2(web3.toBigNumber(v).div(properties.ether).toNumber());
 }
 
-function timestampString(t) {
-    t = (new Date(t * 1000));
-    return t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate() + ' ' + t.getHours() + ':' + t.getMinutes() + ':' + t.getSeconds();
-}
-
 function onSendButtonSubmit() {
     var account = properties.Web3.eth.defaultAccount;
     var _send = function (dst, amount) {
@@ -193,7 +188,7 @@ function onSendButtonSubmit() {
             } else {
                 checkContract(function (danger) {
                     if (danger) {
-                        var c='danger';
+                        var c = 'danger';
                         alertify.confirm('目标地址是合约！<br>向其发送以太币，将触发其回调函数，产生安全风险！<br>建议向该地址发送coToken，以避免风险！<br>你确定发送以太币吗？', function () {
                             $('.alertify').removeClass(c);
                             _realSend(dst, amount);

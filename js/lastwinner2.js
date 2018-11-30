@@ -327,40 +327,42 @@ function updateData() {
 
 function refreshData() {
     blockchain.getInfo().then(function (promises) {
-        var n = promises[0], n2;
-        properties.flag = n.mod(properties.div8).toNumber();
-        n = n.div(properties.div8).floor();
-        properties.section = n.mod(properties.div8).toNumber();
-        n = n.div(properties.div8).floor();
-        properties.goal = n.mod(properties.div80);
-        n = n.div(properties.div80).floor();
-        properties.endTime = n.mod(properties.div64).toNumber();
-        n = n.div(properties.div64).floor();
-        properties.startTime = n.mod(properties.div64).toNumber();
-        properties.round = n.div(properties.div64).floor().toNumber();
+        if (promises[7].length === 42) {
+            var n = promises[0], n2;
+            properties.flag = n.mod(properties.div8).toNumber();
+            n = n.div(properties.div8).floor();
+            properties.section = n.mod(properties.div8).toNumber();
+            n = n.div(properties.div8).floor();
+            properties.goal = n.mod(properties.div80);
+            n = n.div(properties.div80).floor();
+            properties.endTime = n.mod(properties.div64).toNumber();
+            n = n.div(properties.div64).floor();
+            properties.startTime = n.mod(properties.div64).toNumber();
+            properties.round = n.div(properties.div64).floor().toNumber();
 
-        properties.rewards = promises[1].div(properties.ether).toNumber();
-        properties.current = promises[2];
-        properties.expected = promises[3].div(properties.ether).toNumber();
-        properties.profit = promises[4].div(properties.ether).toNumber();
-        var total = promises[5];
-        if (typeof properties.total === 'undefined') {
-            properties.total = total;
-        } else if (total.gt(properties.total)) {
-            n = parseInt(total.div(properties.tenthEther).toNumber());
-            n2 = parseInt(properties.total.div(properties.tenthEther).toNumber());
-            if (n > n2) {
-                showTips($('#gotFUS').text('恭喜你获得 ' + (13 * (n - n2)) + ' FUS奖励'), 5000);
+            properties.rewards = promises[1].div(properties.ether).toNumber();
+            properties.current = promises[2];
+            properties.expected = promises[3].div(properties.ether).toNumber();
+            properties.profit = promises[4].div(properties.ether).toNumber();
+            var total = promises[5];
+            if (typeof properties.total === 'undefined') {
+                properties.total = total;
+            } else if (total.gt(properties.total)) {
+                n = parseInt(total.div(properties.tenthEther).toNumber());
+                n2 = parseInt(properties.total.div(properties.tenthEther).toNumber());
+                if (n > n2) {
+                    showTips($('#gotFUS').text('恭喜你获得 ' + (13 * (n - n2)) + ' FUS奖励'), 5000);
+                }
+                properties.total = total;
             }
-            properties.total = total;
-        }
-        properties.cotoken = promises[6];
-        properties.lastPlayer = promises[7].toLowerCase();
+            properties.cotoken = promises[6];
+            properties.lastPlayer = promises[7].toLowerCase();
 
-        properties.gasPrice = parseInt(promises[8].toNumber());
+            properties.gasPrice = parseInt(promises[8].toNumber());
 
-        if (properties.histroy < properties.round) {
-            getWinnerList();
+            if (properties.histroy < properties.round) {
+                getWinnerList();
+            }
         }
     }).catch(function (err) {
         console.log("出错了", err);

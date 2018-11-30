@@ -38,6 +38,15 @@ function isValidAddress(address) {
     return /^0x[0-9a-fA-F]{40}$/.test(address);
 }
 
+function timestampString(t) {
+    if (typeof t === 'number') {
+        t = new Date(t * 1000);
+    } else {
+        t = new Date();
+    }
+    return t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate() + ' ' + t.getHours() + ':' + t.getMinutes() + ':' + t.getSeconds();
+}
+
 function showTips(tips, time) {
     if (tips.css('margin-top') === '0px') {
         tips.css('margin-top', '-' + tips.outerHeight(true) + 'px');

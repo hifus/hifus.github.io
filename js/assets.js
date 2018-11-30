@@ -811,7 +811,7 @@ $(start(function (account) {
             properties.fus = promises[2];
             $('#fus').text(promises[2].div(properties.ether).toNumber());
             $('#dividends').text(promises[3].div(properties.ether).toNumber());
-            $('#dividend_date').text(promises[4].gt(Math.pow(10, 20)) ? '未确定' : (new Date(promises[4].toNumber() * 1000)).toLocaleString());
+            $('#dividend_date').text(promises[4].gt(Math.pow(10, 20)) ? '未确定' : timestampString(promises[4].toNumber()));
             properties.validFus = promises[5];
             properties.isTransferableFUS = promises[6];
             var tbl = $('#tbl');
