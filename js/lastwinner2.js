@@ -264,48 +264,65 @@ function getWinnerList() {
 }
 
 function updateData() {
-    $('#round').text(properties.round);
-    $('#section').text((properties.section < 1) ? '0' : properties.section);
-    $('#times').text((properties.section < 1) ? '0' : (properties.section + 1));
-    if (properties.startTime > Math.pow(10, 10)) {
-        //游戏未设置
-    } else {
-        var now = Date.parse(new Date()) / 1000, countdown, h, m, s;
-        if (properties.startTime > now) {
-            //游戏未开始，倒计时
-            $('#countdown').hide();
-            countdown = properties.startTime - now;
-            s = countdown % 60;
-            m = (countdown - s) / 60 % 60;
-            h = (countdown - s - m * 60) / 3600;
-            $('#countdown2').show().find('span').text(h + ((m > 9) ? ':' : ':0') + m + ((s > 9) ? ':' : ':0') + s);
-        } else if (properties.endTime < now) {
-            $('#countdown2').hide();
-            $('#countdown').text('本轮已结束');
-            if (properties.histroy <= properties.round) {
-                getWinnerList();
-            }
+    if (properties.round > 0) {
+        $('#round').text(properties.round);
+        $('#section').text((properties.section < 1) ? '0' : properties.section);
+        $('#times').text((properties.section < 1) ? '0' : (properties.section + 1));
+        if (properties.startTime > Math.pow(10, 10)) {
+            //游戏未设置
         } else {
-            //游戏进行中
-            $('#countdown2').hide();
-            countdown = properties.endTime - now;
-            s = countdown % 60;
-            m = (countdown - s) / 60 % 60;
-            h = (countdown - s - m * 60) / 3600;
-            $('#countdown').show().text(h + ((m > 9) ? ':' : ':0') + m + ((s > 9) ? ':' : ':0') + s);
+            var now = Date.parse(new Date()) / 1000, countdown, h, m, s;
+            if (properties.startTime > now) {
+                //游戏未开始，倒计时
+                $('#countdown').hide();
+                countdown = properties.startTime - now;
+                s = countdown % 60;
+                m = (countdown - s) / 60 % 60;
+                h = (countdown - s - m * 60) / 3600;
+                $('#countdown2').show().find('span').text(h + ((m > 9) ? ':' : ':0') + m + ((s > 9) ? ':' : ':0') + s);
+            } else if (properties.endTime < now) {
+                $('#countdown2').hide();
+                $('#countdown').text('本轮已结束');
+                if (properties.histroy <= properties.round) {
+                    getWinnerList();
+                }
+            } else {
+                //游戏进行中
+                $('#countdown2').hide();
+                countdown = properties.endTime - now;
+                s = countdown % 60;
+                m = (countdown - s) / 60 % 60;
+                h = (countdown - s - m * 60) / 3600;
+                $('#countdown').show().text(h + ((m > 9) ? ':' : ':0') + m + ((s > 9) ? ':' : ':0') + s);
+            }
+        }
+
+        $('#rewards').text((properties.rewards > 1) ? properties.rewards.toPrecision(7) : properties.rewards.toFixed(6));
+        var goal = properties.goal.div(properties.price).toNumber();
+        $('#goal').text(goal);
+        if (goal > 0) {
+            var current = properties.current.div(properties.price).toNumber();
+            $('#current').text(current).css('width', (current * 100 / goal).toFixed(3) + '%');
+        }
+        $('#expected').text(properties.expected.toFixed(7));
+        $('#profit').text(properties.profit.toFixed(7));
+        calcExpectedProfit(parseInt($('#seed').val() || 0));
+
+        var lastPlayer = $('#lastPlayer');
+        if (properties.lastPlayer === properties.Web3.eth.defaultAccount) {
+            lastPlayer.html('自己<i class="fas fa-thumbs-up ml-2"></i>');
+        } else if (properties.lastPlayer === '0x0000000000000000000000000000000000000000') {
+            lastPlayer.text('无');
+        } else {
+            lastPlayer.text(properties.lastPlayer);
+        }
+
+        if (properties.gasPrice === 0) {
+            $('#price').hide();
+        } else {
+            $('#price').text('Gas价格上限为 ' + properties.gasPrice + ' GWei').show();
         }
     }
-
-    $('#rewards').text((properties.rewards > 1) ? properties.rewards.toPrecision(7) : properties.rewards.toFixed(6));
-    var goal = properties.goal.div(properties.price).toNumber();
-    $('#goal').text(goal);
-    if (goal > 0) {
-        var current = properties.current.div(properties.price).toNumber();
-        $('#current').text(current).css('width', (current * 100 / goal).toFixed(3) + '%');
-    }
-    $('#expected').text(properties.expected.toFixed(7));
-    $('#profit').text(properties.profit.toFixed(7));
-    calcExpectedProfit(parseInt($('#seed').val() || 0));
 }
 
 function refreshData() {
@@ -338,24 +355,9 @@ function refreshData() {
             properties.total = total;
         }
         properties.cotoken = promises[6];
-        properties.lastPlayer = promises[7];
-        if (properties.lastPlayer.toLowerCase() === properties.Web3.eth.defaultAccount) {
-            $('#lastPlayer').html('自己<i class="fas fa-thumbs-up ml-2"></i>');
-        } else if (properties.lastPlayer === '0x0000000000000000000000000000000000000000') {
-            $('#lastPlayer').text('无');
-        } else {
-            $('#lastPlayer').text(properties.lastPlayer);
-        }
+        properties.lastPlayer = promises[7].toLowerCase();
 
-        var gasPrice = parseInt(promises[8].toNumber());
-        if (properties.gasPrice !== gasPrice) {
-            properties.gasPrice = gasPrice;
-            if (gasPrice === 0) {
-                $('#price').hide();
-            } else {
-                $('#price').text('Gas价格上限为 ' + gasPrice + ' GWei').show();
-            }
-        }
+        properties.gasPrice = parseInt(promises[8].toNumber());
 
         if (properties.histroy < properties.round) {
             getWinnerList();
@@ -455,11 +457,12 @@ $(start(function (account) {
         properties.histroy = 1;
         properties.time = 0;
         properties.gasPrice = 0;
+        properties.round = 0;
         setInterval(refreshData, 1000);
         setInterval(updateData, 1000);
         refreshData();
 
-        blockchain.getBlockNumber().then(function(_blockNum){
+        blockchain.getBlockNumber().then(function (_blockNum) {
             properties.LastBlock = _blockNum;
             blockchain.getBlock(_blockNum - 1).then(function (block) {
                 if (block) {
