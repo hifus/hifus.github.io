@@ -252,8 +252,7 @@ function getRealTimePrice() {
         });
     } else {
         properties.currencies.find('span').text('0');
-        c.ETH = 0;
-        eth.text(displayString2(c.ETH)).data('value', c.ETH);
+        eth.text(displayString2(0)).data('value', 0);
     }
 }
 
