@@ -122,7 +122,7 @@
                         <img src="images/gold.png">
                         <h1><span id="rewards">0.000000</span></h1>
                         <div style="margin-top: 20px;" id="vaderSize">
-                            <div>本节目标</div>
+                            <div>第<span id="target">0</span>节目标</div>
                             <span class="barControl" style="width:30%;">
                                 <div class="barContro_space">
                                     <span class="vader" style="width: 0;" id="current">0</span>
@@ -137,7 +137,7 @@
                             style="font-size: 3rem; color: #00ff00; font-family: Monaco; font-weight: 900;">未开始</h1>
                         <h1 id="countdown2" class="mb-0"
                             style="display:none; font-size: 1.5rem; color: #00ffff; font-family: Monaco; font-weight: 900;">
-                            距离开始还有<br><span></span>
+                            距离<span></span>开始还有<br><span></span>
                         </h1>
                     </div>
                     <div class="text-center col-auto mx-auto px-0 mb-2" style="line-height: 1rem;">
@@ -145,7 +145,7 @@
                         <br>
                         <small id="lastPlayer"></small>
                     </div>
-                    <table class="table table-sm table-dark h6 font-weight-light text-monospace mb-2" id="blocks">
+                    <table class="table table-sm table-dark h6 font-weight-light text-monospace mb-2 d-none" id="blocks">
                         <thead>
                         <tr>
                             <td>块号</td>

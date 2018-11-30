@@ -279,7 +279,10 @@ function updateData() {
                 s = countdown % 60;
                 m = (countdown - s) / 60 % 60;
                 h = (countdown - s - m * 60) / 3600;
-                $('#countdown2').show().find('span').text(h + ((m > 9) ? ':' : ':0') + m + ((s > 9) ? ':' : ':0') + s);
+                var spans = $('#countdown2').show().find('span');
+                spans.eq(1).text(h + ((m > 9) ? ':' : ':0') + m + ((s > 9) ? ':' : ':0') + s);
+                spans.eq(0).text(' 第' + properties.section + '节 ');
+                $('#target').text(properties.section);
             } else if (properties.endTime < now) {
                 $('#countdown2').hide();
                 $('#countdown').text('本轮已结束');
@@ -294,6 +297,7 @@ function updateData() {
                 m = (countdown - s) / 60 % 60;
                 h = (countdown - s - m * 60) / 3600;
                 $('#countdown').show().text(h + ((m > 9) ? ':' : ':0') + m + ((s > 9) ? ':' : ':0') + s);
+                $('#target').text(properties.section);
             }
         }
 
@@ -464,7 +468,7 @@ $(start(function (account) {
         setInterval(updateData, 1000);
         refreshData();
 
-        blockchain.getBlockNumber().then(function (_blockNum) {
+        /*blockchain.getBlockNumber().then(function (_blockNum) {
             properties.LastBlock = _blockNum;
             blockchain.getBlock(_blockNum - 1).then(function (block) {
                 if (block) {
@@ -473,6 +477,6 @@ $(start(function (account) {
                     refreshBlock();
                 }
             });
-        });
+        });*/
     });
 }));
