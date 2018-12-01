@@ -368,35 +368,18 @@ function refreshData() {
             var goal = n.mod(properties.div80);
             n = n.div(properties.div80).floor();
             var endTime = n.mod(properties.div64).toNumber();
-            n = n.div(properties.div64).floor();
-            var startTime = n.mod(properties.div64).toNumber();
-            var round = n.div(properties.div64).floor().toNumber();
-            var rewards = promises[1].div(properties.ether).toNumber();
 
-            /*if (round < properties.round) {
-                console.log('new round: ' + round + ', old round:' + properties.round);
-                return;
-            }
-            if (round > properties.round) {
-                properties.section = 0;
-            }
-            if (section < properties.section) {
-                console.log('new section: ' + section + ', old section:' + properties.section);
-                return;
-            }
-            if (section === properties.section && rewards < properties.rewards) {
-                console.log('new rewards: ' + rewards + ', old rewards:' + properties.rewards);
-                return;
-            }*/
-
+            if (endTime < properties.endTime) return;
             properties.flag = flag;
             properties.section = section;
             properties.goal = goal;
             properties.endTime = endTime;
-            properties.startTime = startTime;
-            properties.round = round;
-            properties.rewards = rewards;
 
+            n = n.div(properties.div64).floor();
+            properties.startTime = n.mod(properties.div64).toNumber();
+            properties.round = n.div(properties.div64).floor().toNumber();
+
+            properties.rewards = promises[1].div(properties.ether).toNumber();
             properties.current = promises[2];
             properties.expected = promises[3].div(properties.ether).toNumber();
             properties.profit = promises[4].div(properties.ether).toNumber();
