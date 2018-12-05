@@ -456,10 +456,20 @@ function makeLink(addr) {
     } else if (reg === true) {
         return '<a href="https://hifus.github.io/a.html?' + addr + '">' + addr + '</a>';
     } else {
-        blockchain.isRegistered(addr).then(function (r) {
-            properties.senderRegistered[addr] = r;
-        });
-        return addr;
+        if (typeof reg === 'undefined') {
+            properties.senderRegistered[addr] = 0;
+            blockchain.isRegistered(addr).then(function (r) {
+                properties.senderRegistered[addr] = r;
+                if (r) {
+                    var s = $('.' + addr.substr(2));
+                    s.each(function (i, e) {
+                        $('<a href="https://hifus.github.io/a.html?' + addr + '">' + addr + '</a>').insertAfter(e);
+                    });
+                    s.remove();
+                }
+            });
+        }
+        return '<span class="' + addr.substr(2) + '">' + addr + '</span>';
     }
 }
 
