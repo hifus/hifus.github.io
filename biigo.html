@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Biigo挖矿</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css"
+          integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="css/alertify.css"/>
+    <style>
+        #loadingSpinner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, .85);
+            display: block;
+            opacity: 1;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        #loadingSpinner > * {
+            color: rgba(0, 0, 0, .87);
+            z-index: 1000;
+            position: absolute;
+            left: 0;
+            top: 45%;
+            width: 100%;
+            text-align: center;
+            font-size: x-large;
+        }
+
+        #loadingText.waiting {
+            top: 30%;
+            padding-top: 5rem;
+        }
+
+        #loadingText.waiting:before {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 50%;
+            background-image: url('images/loader_gray.gif');
+            background-size: 4.57142857rem 4.57142857rem;
+            width: 4.57142857rem;
+            height: 4.57142857rem;
+            margin: 0 0 0 -2.28571429rem;
+        }
+
+        #mines > li {
+            width: 50%;
+        }
+
+        #mine_lines li {
+            text-align: left;
+        }
+
+        #nav-tab .nav-link {
+            padding: .5rem .8rem;
+        }
+
+        #big, #small {
+            font-size: 0.87rem;
+        }
+
+        #big .col-4, #small .col-4 {
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+        }
+
+        #waiting {
+            position: absolute;
+            width: 100%;
+            top: 50%;
+            left: 0;
+            margin-top: -1rem;
+        }
+
+        #history a {
+            padding: .5rem .3rem;
+        }
+
+        #nav-rule td {
+            vertical-align: middle;
+        }
+
+        .modal-lg {
+            max-width: 100%;
+        }
+
+        .mine {
+            cursor: pointer;
+        }
+
+        .mine:hover {
+            background-color: rgba(0, 0, 0, .075);
+        }
+    </style>
+</head>
+<body style="background-color: #262425;">
+<section>
+    <div class="container text-dark mt-0">
+        <div class="row">
+            <div class="col-12 mx-auto">
+                <img src="images/Gold-Miner.jpg" alt="mine" style="width: 100%">
+            </div>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="container text-dark mt-0">
+        <div class="row">
+            <div class="col-12 col-md-6 mx-auto">
+                <div class="jumbotron py-3">
+                    <div class="row text-center">
+                        <div class="col-12">
+                            <h3 class="mb-3">欢迎光临Biigo矿场</h3>
+                            <ul class="nav nav-tabs" id="mines" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="bigTab" data-toggle="tab" href="#big" role="tab"
+                                       aria-controls="big"
+                                       aria-selected="true">宝石矿区<br>
+                                        <small>需要5000矿工</small>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="smallTab" data-toggle="tab" href="#small" role="tab"
+                                       aria-controls="small"
+                                       aria-selected="false">金银矿区<br>
+                                        <small>需要2000矿工</small>
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" id="mine_holes">
+                                <div class="tab-pane fade pt-3 show active" id="big" role="tabpanel"
+                                     aria-labelledby="big-tab">
+                                    <div id="waiting">
+                                        <h1 id="searching" class="mb-0"
+                                            style="font-family: Monaco; font-weight: 900;">
+                                            正在探矿……</h1>
+                                        <h1 id="found" class="mb-0 d-none"
+                                            style="font-size: 1.5rem; font-family: Monaco; font-weight: 900;">
+                                            正在获取新矿场数据<br>请稍候……</h1>
+                                        <h1 id="countdown2" class="my-1 d-none"
+                                            style="font-size: 1.5rem; color: #0070ff; font-family: Monaco; font-weight: 900;">
+                                            离探矿结束还有<br><span id="countdown"></span>
+                                        </h1>
+                                    </div>
+                                    <div class="row invisible">
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/5000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/5000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/5000</small>
+                                        </div>
+                                    </div>
+                                    <hr class="invisible">
+                                    <div class="row invisible">
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/5000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/5000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/5000</small>
+                                        </div>
+                                    </div>
+                                    <hr class="invisible">
+                                    <div class="row invisible">
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/5000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/5000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/5000</small>
+                                        </div>
+                                    </div>
+                                    <form id="specify" style="text-align: right;margin-top: 1rem;" class="invisible">
+                                        <div class="form-group" style="display: inline-block">
+                                            <label for="no">指定矿洞号：</label>
+                                            <input type="number" style="width: 5rem;display: inline-block;"
+                                                   class="form-control form-control-sm" id="no" placeholder="1-65000"
+                                                   min="1"
+                                                   step="1">
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary mb-2 mr-2"
+                                                style="margin-top: .4rem;" id="plus"><i
+                                                class="fas fa-plus"></i></button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary mb-2"
+                                                style="margin-top: .4rem;" id="refresh"><i
+                                                class="fas fa-sync-alt"></i></button>
+                                    </form>
+                                </div>
+                                <div class="tab-pane fade pt-3" id="small" role="tabpanel" aria-labelledby="small-tab">
+                                    <div class="row invisible">
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/2000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/2000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/2000</small>
+                                        </div>
+                                    </div>
+                                    <hr class="invisible">
+                                    <div class="row invisible">
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/2000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/2000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/2000</small>
+                                        </div>
+                                    </div>
+                                    <hr class="invisible">
+                                    <div class="row invisible">
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/2000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/2000</small>
+                                        </div>
+                                        <div class="col-4 text-center mine">
+                                            <img src="images/mine.png"><br>
+                                            <span></span>号矿洞<br>
+                                            <small><span></span>/2000</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="loadingSpinner">
+                            <div id="loadingText" class="d-none waiting">正在连接MetaMask...</div>
+                            <noscript>
+                                此页面需要执行Javascript。
+                            </noscript>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 mx-auto">
+                <div style="padding: 1rem 0;margin-bottom: 2rem;background-color: white;border-radius: .3rem;">
+                    <div class="col-12">
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home"
+                                   role="tab" aria-controls="nav-home" aria-selected="true">收获</a>
+                                <a class="nav-item nav-link" id="nav-history-tab" data-toggle="tab" href="#nav-history"
+                                   role="tab" aria-controls="nav-history" aria-selected="false">历史</a>
+                                <a class="nav-item nav-link" id="nav-rule-tab" data-toggle="tab" href="#nav-rule"
+                                   role="tab"
+                                   aria-controls="nav-rule" aria-selected="false">指南</a>
+                                <a class="nav-item nav-link" id="nav-algorithms-tab" data-toggle="tab"
+                                   href="#nav-algorithms"
+                                   role="tab" aria-controls="nav-algorithms" aria-selected="false">算法</a>
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-home" role="tabpanel"
+                                 aria-labelledby="nav-home-tab">
+                                <div class="row pt-2">
+                                    <div class="col-12 pt-3">
+                                        <h2>宝贝价值：<br><span id="rewards">0</span>
+                                            <img src="images/gold.png"
+                                                 style="height: 3rem;margin-top: -10px;margin-left: 0;">
+                                        </h2>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <div id="withdrawOk" class="alert alert-success col-auto mx-auto"
+                                                 style="display: none;z-index: 100;" role="alert">卖出宝贝成功
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4 mx-auto mt-2">
+                                        <button id="withdraw" class="btn btn-block btn-lg btn-primary">
+                                            卖出宝贝
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-history" role="tabpanel"
+                                 aria-labelledby="nav-history-tab">
+                                <div class="row">
+                                    <div class="col-12 pt-2 px-2">
+                                        <h2 id="never_mined" class="text-center">您未曾挖矿</h2>
+                                        <ul class="list-group" id="history">
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-rule" role="tabpanel" aria-labelledby="nav-rule-tab">
+                                <div class="row">
+                                    <div class="col-12 pt-3">
+                                        <h5>Biigo矿场 规则说明</h5>
+                                        <p>0. <b>本游戏绝对公平、公开、透明、完全随机、不可预测、不可人为控制，纯靠人品，顶级人品可获得42.45倍奖励！</b>详见算法说明。</p>
+                                        <p>1. 游戏中，玩家可以通过雇佣矿工到矿洞中挖矿，从而有机会获得奖励。</p>
+                                        <p>2. 矿场分2种，分别为 宝石矿 和 金银矿，各需至少 5000 和 2000 名矿工才能开始挖矿。</p>
+                                        <p>3. 矿洞未满矿工时，玩家可以雇佣矿工到其中挖矿，每名矿工需支付0.01ETH雇佣费。</p>
+                                        <p>4. 矿洞满员后，挖矿开始。宝石矿需挖4个区块，金银矿需挖3个区块。</p>
+                                        <p>5. 挖矿过程中，幸运的矿工会挖到钻石、宝石、水晶、黄金、白银等宝贝，宝贝属于雇佣此批矿工的玩家。</p>
+                                        <p>6.
+                                            宝石矿中，会挖出钻石、宝石和水晶。金银矿中，会挖出黄金和白银。每种宝贝都会由3批不同的矿工挖出，因此，每个宝石矿洞共有9批幸运矿工，每个金银矿洞共有6批幸运矿工。根据每批矿工的数量多少进行宝贝分配，雇佣矿工越多，分得的份额就越大。</p>
+                                        <p>7.
+                                            挖矿结束后，需要搬运宝贝，首先帮忙搬运宝贝的玩家，可获得0.1ETH的报酬。由于以太坊的特性，必须在满员后250个区块（约3500秒）内进行搬运，否则不会产生幸运矿工，相关资金流入FUS分红中。搬运完成后，卖出宝贝则没有限时。</p>
+                                        <p>8. 完成搬运后，玩家可卖出宝贝获得收益。</p>
+                                        <p>9. 开挖完成的矿洞不能再开挖，但系统每小时会勘探出一批新矿洞作为补充，每个矿洞需向系统支付0.5ETH作为勘探费用。</p>
+                                        <p>a.
+                                            每批雇佣矿工的最大数量为100名，雇佣费用超出部分将返还到coToken账号。同一账号每小时只能雇佣2批矿工，并且同一小时内每个矿洞只能分派1批矿工。</p>
+                                        <p>b. 累计每雇佣10名矿工，将获得5FUS的额外奖励，FUS可视作股权用于分红。</p>
+                                        <p>c.
+                                            由于在以太坊网络上存储数据相对昂贵，系统只保留24小时内的历史记录用于查询。若一个矿洞从发现到搬运完成，超过24小时，则其数据不被记录，但幸运的矿工依然会挖到宝贝，所属的玩家依然会获得相应收益。</p>
+                                        <p>d. 每个账号前48次成功雇佣，会消耗较多gas用于生成账号相关的数据记录。强烈建议把gas上限设为300万，以保证请求顺利完成。</p>
+                                        <p>e.
+                                            本游戏无需争先，并且参与游戏的Gas价格上限为30GWei，Gas价格超过上限的请求会被拒绝。Gas价格也不要低于4G，否则该请求可能永久不被矿工执行，也对该账号以后的请求有一定阻碍。</p>
+                                        <p>f. 本游戏所有奖励都发送到coToken账号中，所有无效购买也会返还到coToken账号中，请自行提取为ETH。</p>
+                                        <p>g. 若coToken余额足够用于雇佣，本游戏会优先使用coToken中的余额，减少矿工费的支出，此时需要支付的ETH为0。</p>
+                                        <p>h.
+                                            本游戏部分资金用于FUS分红。向本游戏累计投入0.1ETH即永久获得本游戏分红资格，分红数量按照分红时持有的FUS数量进行计算。本游戏投入不足0.1ETH的账号，所持有的FUS不参与本游戏的分红计算。</p>
+                                        <table class="table table-sm text-center" style="font-size: .8rem;">
+                                            <thead>
+                                            <tr>
+                                                <th colspan="2">资金分配</th>
+                                            </tr>
+                                            <tr>
+                                                <th>用途</th>
+                                                <th>数量</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr>
+                                                <td>幸运玩家<br>总收益</td>
+                                                <td>宝石矿：91%-3.1ETH/矿洞<br>金银矿：91%-1.6ETH/矿洞</td>
+                                            </tr>
+                                            <tr>
+                                                <td>FUS分红</td>
+                                                <td>宝石矿：2.5ETH/矿洞<br>金银矿：1ETH/矿洞</td>
+                                            </tr>
+                                            <tr>
+                                                <td>上级提成</td>
+                                                <td>6%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>上上级提成</td>
+                                                <td>3%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>平台费用</td>
+                                                <td>0.5ETH/矿洞</td>
+                                            </tr>
+                                            <tr>
+                                                <td>搬运报酬</td>
+                                                <td>0.1ETH/矿洞</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-algorithms" role="tabpanel"
+                                 aria-labelledby="nav-algorithms-tab">
+                                <div class="row">
+                                    <div class="col-12 pt-3">
+                                        <p>
+                                            众所周知，区块链的安全性和不可逆性，是建立在区块散列值的基础上的。为每个区块寻找合适的散列值，是需要消耗巨量的运算，并且是完全不可预测和人为控制的。</p>
+                                        <p>因此，若将游戏的随机部分，建立在未来区块的散列值上，所得的随机结果，也就是公平、不可预测和不可人为控制的。</p>
+                                        <p>本游戏中，在玩家参与完成（矿洞满员）后，再使用散列值进行随机计算（搬运宝贝），就可完全杜绝预测结果等作弊行为。</p>
+                                        <p>具体来说，若玩家参与完成时，所在的区块为N，则将区块N+2、N+3、N+4（金银矿不需要N+4）的散列值，作为选择幸运矿工的依据。</p>
+                                        <p>使用第N+2块的散列值，算出3个幸运数字，对应3批不同的矿工，可获得水晶（宝石矿）和白银（金银矿）</p>
+                                        <p>使用第N+3块的散列值，算出3个幸运数字，对应3批不同的矿工，可获得宝石（宝石矿）和黄金（金银矿）</p>
+                                        <p>使用第N+4块的散列值，算出3个幸运数字，对应3批不同的矿工，可获得钻石（宝石矿）</p>
+                                        <p>幸运数字的计算方法是：散列值 ÷ 矿工总数 的余数，包含以此余数作为矿工号的矿工批次，就是幸运的矿工。因此，雇佣的矿工越多，越有机会获得幸运。</p>
+                                        <p>
+                                            Keccak算法拥有良好的加密性能以及抗解密能力，因此美国国家标准与技术研究院(NIST)选择了Keccak算法作为SHA-3的标准算法。以太坊也选择了此算法的Keccak256版本作为其底层核心散列算法，我们也同样选择Keccak256用于计算幸运数字。</p>
+                                        <p>
+                                            用于计算第1批幸运矿工的散列值k1，就是Keccak256(区块的散列值)。然后再对k1进行Keccak256计算，即k2=Keccak256(k1)，用于计算第2批幸运矿工，然后再次k3=Keccak256(k2)，用于计算第3批幸运矿工。若同一批矿工在同一种宝贝上多次获得幸运，也只算一次，系统继续使用k(N+1)=Keccak256(kN)来计算下一批矿工，直到获得3批不同的矿工。</p>
+                                        <p>每个矿洞中，总奖励 = 总雇佣数量 × 雇佣费 - 层级费用 - FUS分红 - 勘探费用</p>
+                                        <p>宝石矿中，钻石、宝石、水晶分别占总奖励的60%、30%、10%。金银矿中，黄金、白银分别占总奖励的70%、30%</p>
+                                        <p>每种宝贝都会按权重分配给3批幸运矿工，每批矿工分配价值 = 此类宝贝总价值 ÷ 此3批矿工的总数 ×
+                                            该批矿工的数量。因此雇佣越多的矿工，将会分得越多的价值。</p>
+                                        <p>
+                                            如何获得42.45倍收益？若在一个宝石矿洞中，当雇佣矿工数达到4999名时，最后一玩家又雇佣了100名，总计就有5099名矿工。若某玩家雇佣了100名矿工，并且其人品特别好，同时获得钻石、宝石、水晶3种奖励，并且其余6批幸运矿工都只得1名，此时，该玩家将获得42.45ETH的收益！会是你吗？</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="modal fade text-dark" id="HireModal" tabindex="-1" role="dialog" aria-labelledby="HireModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title mx-auto" id="HireModalLabel">雇佣矿工到<span id="mine_no"></span>号<span
+                        id="mine_type"></span>矿</h5>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <form id="hireForm">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control text-monospace"
+                                               style="font-size: 1.1rem;"
+                                               id="employee" name="employee" placeholder="@0.01ETH"
+                                               aria-describedby="hireHelp" min="1" max="100" step="1">
+                                        <span id="buyHelp" class="form-text text-muted"
+                                              style="display: none;">请填入您要雇佣的矿工数量</span>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                选择数量
+                                            </button>
+                                            <div class="dropdown-menu" id="employeeNum">
+                                                <a class="dropdown-item">1</a>
+                                                <a class="dropdown-item">2</a>
+                                                <a class="dropdown-item">5</a>
+                                                <a class="dropdown-item">10</a>
+                                                <a class="dropdown-item">20</a>
+                                                <a class="dropdown-item">50</a>
+                                                <a class="dropdown-item">100</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto mx-auto px-0" id="addBtns">
+                                        <button type="button" class="btn btn-outline-primary">
+                                            +1
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary">
+                                            +5
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary">
+                                            +10
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary">
+                                            +50
+                                        </button>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <div id="hireOk" class="alert alert-success col-auto mx-auto"
+                                                 style="display: none;z-index: 100;"
+                                                 role="alert">雇佣成功
+                                            </div>
+                                            <div id="hireFail" class="alert alert-danger col-auto mx-auto"
+                                                 style="display: none;z-index: 100;"
+                                                 role="alert">雇佣失败<br>资金返还到coToken中
+                                            </div>
+                                            <div id="invNumber" class="alert alert-danger col-auto mx-auto"
+                                                 style="display: none;z-index: 100;"
+                                                 role="alert">无效的矿工数量
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 text-left mt-3">
+                                        <h6>雇佣支出：<span id="cost">0</span>
+                                            <img src="images/gold.png"
+                                                 style="height: 2rem;margin-top: -10px;margin-left: 5px;">
+                                        </h6>
+                                    </div>
+                                    <div class="col-12 text-left mt-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input mt-3" type="checkbox" checked
+                                                   id="autoSelect">
+                                            <label class="form-check-label" for="autoSelect">
+                                                如果矿工到达后发现满员，<br>则安排他们到邻近矿洞
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="confirm">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" id="DetailsModal"
+     aria-labelledby="DetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body px-2">
+                <h1 id="tips">请使用横屏模式</h1>
+                <div id="details">
+                    <h3 class="text-center">第<span></span>号<span></span>矿洞</h3>
+                    <div class="text-center">
+                        <span></span>位玩家，共雇佣了<span></span>名矿工，
+                        于第<span></span>区块满员开挖。
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary mx-auto" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.5/umd/popper.min.js"
+        integrity="sha256-VTBbuQQf3bpp1u7pm5VrsWn+Wn6chOiW2U1dOMBg9Zs=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=" crossorigin="anonymous"></script>
+<script src="js/alertify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"
+        integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.5.2/bluebird.min.js"
+        integrity="sha256-KxHSEnmbcOfmmoeGOLsNUpBeOrNbssSJ3fyskCGsN6M=" crossorigin="anonymous"></script>
+<script src="js/contracts.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/biigo.js"></script>
+</body>
+</html>
