@@ -265,7 +265,7 @@ function History(round, packed, rewards) {
     var n = packed.div(properties.bn2p40).floor().mod(properties.bn2p24);
     this.pos = n.div(properties.bn2p17).floor().toNumber();
     n = n.mod(properties.bn2p17).toNumber();
-    if (n > properties.MaxCount) {
+    if (n >= properties.MaxCount) {
         this.no = n - properties.MaxCount;
         this.small = 1;
     } else {
@@ -337,14 +337,14 @@ function onMineSelected(e) {
                     h = properties.histories[i];
                     if (h.no === no && h.small === small && h.round >= round) {
 
-                        properties.Contract.clean((small ? properties.MaxCount : 0) + no, h.order, {gas: 3000000}, makeTxnCallback(function () {
+                        properties.Contract.clean((small ? properties.MaxCount : 0) + no, h.order, {gas: 2000000}, makeTxnCallback(function () {
                             alertify.alert('感谢您的帮忙！');
                         }));
                         break;
                     }
                 }
             } else {
-                properties.Contract.clean((small ? properties.MaxCount : 0) + no, 0, {gas: 3000000}, makeTxnCallback(function () {
+                properties.Contract.clean((small ? properties.MaxCount : 0) + no, 0, {gas: 2000000}, makeTxnCallback(function () {
                     alertify.alert('感谢您的帮忙！');
                 }));
             }
@@ -644,9 +644,9 @@ function onConfirmButtonSubmit() {
             hole += properties.MaxCount;
         }
         if (properties.cotoken.lt(cost)) {
-            properties.Contract.buy(0, hole, {gas: 2000000, value: cost}, makeTxnCallback(f));
+            properties.Contract.buy(0, hole, {gas: 3000000, value: cost}, makeTxnCallback(f));
         } else {
-            properties.Contract.buy(cost, hole, {gas: 2000000}, makeTxnCallback(f));
+            properties.Contract.buy(cost, hole, {gas: 3000000}, makeTxnCallback(f));
         }
     } else {
         showTips($('#invNumber'));
