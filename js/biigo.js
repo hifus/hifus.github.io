@@ -790,7 +790,7 @@ function setDetailModelMode(e) {
 }
 
 function plusSpecified() {
-    var no = parseInt($('#specify').val());
+    var no = parseInt($('#no').val());
     if (isNaN(no) || i < no || no > 65000) {
         alertify.alert('无效的矿洞号');
     } else {
@@ -816,8 +816,8 @@ function plusSpecified() {
 
                         var i;
                         for (i = properties.mines[small].length; i >= 1; --i) {
-                            if (properties.mines[i].no === no) {
-                                properties.mines.splice(i, 1);
+                            if (properties.mines[small][i].no === no) {
+                                properties.mines[small].splice(i, 1);
                                 break;
                             }
                         }
@@ -827,13 +827,14 @@ function plusSpecified() {
                 });
             } else {
                 properties.mines[small].unshift(mines[i]);
-                properties.mines.splice(i + 1, 1);
+                properties.mines[small].splice(i + 1, 1);
             }
         }
     }
 }
 
 function refresh() {
+    properties.offset[properties.small] = getRandom();
     properties.getValidGames();
 }
 
