@@ -259,18 +259,34 @@ function getWinnerList() {
     if (properties.time < (new Date()).getTime()) {
         properties.time = (new Date()).getTime() + 3000;
         blockchain.getWinners(properties.histroy - 1).then(function (winner) {
-            var li = '<li class="list-group-item p-2"><div><div style="float: left;">第' +
+            var t = winner[2].toNumber();
+            var li = $('<li class="list-group-item p-2"><div><div style="float: left;">第' +
                 properties.histroy + '轮 第' + winner[3].toNumber() +
                 '节</div><div style="float: right;">' +
-                (new Date(winner[2].toNumber() * 1000)).toLocaleString() +
+                (new Date(t * 1000)).toLocaleString() +
                 '</div></div><div style="word-break: break-all;clear: both;">' +
                 winner[0] +
                 '</div><div style="float: right;margin-top: -1.5rem;">' +
                 winner[1].div(properties.ether).toFixed(3) +
                 ' ETH <i class="fas fa-' +
                 ['question', 'check', 'times', 'check'][winner[4].toNumber()] +
-                '-circle"></i></div></li>';
-            $('#winners').prepend(li);
+                '-circle"></i></div></li>').data('time', t);
+            var winners = $('#winners');
+            var lis = winners.children();
+            var n = lis.length, i, t0, li0;
+            if (n === 0) {
+                winners.prepend(li);
+            } else {
+                for (i = 0; i < n; ++i) {
+                    li0 = lis.eq(i);
+                    t0 = parseInt(li0.data('time'));
+                    if (t === t0) {
+                        return;
+                    } else if (t > t0) {
+                        li.insertBefore(li0);
+                    }
+                }
+            }
             properties.time = (new Date()).getTime() - 1;
             properties.histroy++;
         });
