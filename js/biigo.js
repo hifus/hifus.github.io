@@ -927,6 +927,7 @@ $(start(function (account) {
 
         var getSummary = getSummaryFunc();
         getSummary();
+        $('#smallTab').click();
         setInterval(getSummary, 1000);
         setInterval(updateView, 2000);
     });
