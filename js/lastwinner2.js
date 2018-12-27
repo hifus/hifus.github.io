@@ -323,6 +323,38 @@ function updateData() {
                 //游戏进行中
                 $('#countdown2').hide();
                 countdown = properties.endTime - now;
+                if (countdown < 5 * 60) {
+                    if (properties.LastBlock === 0) {
+                        blockchain.getBlockNumber().then(function (_blockNum) {
+                            if (properties.LastBlock === 0) {
+                                blockchain.getBlock(_blockNum - 1).then(function (block) {
+                                    if (properties.LastBlock === 0) {
+                                        if (block) {
+                                            $('#blocks').removeClass('d-none');
+                                            properties.LastBlock = block.number + 1;
+                                            properties.LastBlockTime = block.timestamp;
+                                            properties.blockListId = setInterval(refreshBlock, 3000);
+                                            refreshBlock();
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    }
+                } else {
+                    if (properties.LastBlock !== 0) {
+                        $('#blocks').addClass('d-none');
+                        var tbody = $('#blocks tbody').empty();
+                        for (var i = 0; i < 4; ++i) {
+                            $('<tr><td scope="row">&nbsp;</td><td>&nbsp;</td>' +
+                                '<td>&nbsp;</td></tr>').appendTo(tbody);
+                        }
+                        clearInterval(properties.blockListId);
+                        properties.blockListId = null;
+                        properties.LastBlockTime = 0;
+                        properties.LastBlock = 0;
+                    }
+                }
                 s = countdown % 60;
                 m = (countdown - s) / 60 % 60;
                 h = (countdown - s - m * 60) / 3600;
@@ -521,6 +553,8 @@ $(start(function (account) {
         properties.gasPrice = 0;
         properties.round = 0;
         properties.totalFunds = 0;
+        properties.LastBlock = 0;
+        properties.blockListId = null;
         setInterval(refreshData, 1000);
         setInterval(updateData, 1000);
         setInterval(refreshTotal, 30000);
