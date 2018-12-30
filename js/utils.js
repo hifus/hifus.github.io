@@ -71,6 +71,18 @@ function is_iOS() {
     return navigator.userAgent.match(/(iPhone|iPod|iPad);/i);
 }
 
+function is_android() {
+    return navigator.userAgent.toLowerCase().indexOf('android') >= 0;
+}
+
+function is_chrome() {
+    return navigator.userAgent.toLowerCase().indexOf('chrome') >= 0;
+}
+
+function is_firefox() {
+    return navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
+}
+
 function copy($node) {
     if (is_iOS()) {//区分iPhone设备
         window.getSelection().removeAllRanges();//这段代码必须放在前面否则无效

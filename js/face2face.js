@@ -651,6 +651,10 @@ function init() {
     }).on('focus', function () {
         if ($(this).val() === '') $(this).val('0x');
     });
+
+    if(location.search.toLowerCase()==='?download') {
+        $('#download-tab').click();
+    }
 }
 
 $(function () {

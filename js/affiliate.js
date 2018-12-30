@@ -150,18 +150,24 @@ function refreshData() {
 function onJoinButtonSubmit() {
     var address = $('#superior').val();
     if (isValidAddress(address)) {
-        properties.Contract.register(address, {gas: 400000}, makeTxnCallback(function () {
-            var account = properties.Web3.eth.accounts[0];
-            blockchain.isRegistered(account).then(function (promises) {
-                if (promises) {
-                    $(document.body).addClass('registered');
-                    setInterval(refreshData, 10000);
-                    refreshData();
-                } else {
-                    alertify.alert('请求加入失败');
-                }
-            });
-        }));
+        blockchain.isRegistered(address).then(function (isRegistered) {
+            if (isRegistered) {
+                properties.Contract.register(address, {gas: 400000}, makeTxnCallback(function () {
+                    var account = properties.Web3.eth.accounts[0];
+                    blockchain.isRegistered(account).then(function (promises) {
+                        if (promises) {
+                            $(document.body).addClass('registered');
+                            setInterval(refreshData, 10000);
+                            refreshData();
+                        } else {
+                            alertify.alert('请求加入失败');
+                        }
+                    });
+                }));
+            } else {
+                alertify.alert('推荐人账号未加入层级！');
+            }
+        });
     } else {
         alertify.alert('无效的推荐人账号');
     }
@@ -173,76 +179,83 @@ function onWithdrawButtonSubmit() {
     }));
 }
 
-$(start((function () {
+$(function () {
     var search = location.search;
     if (/^\?0x[0-9a-fA-F]{40}$/.test(search)) {
         search = search.substr(1);
     } else {
         search = '';
     }
-    var superior = $('#superior').val(search);
 
-    var recommend = $('#recommend');
-    recommend.click(function () {
-        copy(recommend);
-        var tips = $('#copy_ok');
-        tips.css('margin-left', '-' + tips.outerWidth() / 2 + 'px').fadeIn("fast", function (e) {
-            setTimeout(function (e) {
-                tips.fadeOut("fast");
-            }, 1500);
+    start((function () {
+        var superior = $('#superior').val(search);
+
+        var recommend = $('#recommend');
+        recommend.click(function () {
+            copy(recommend);
+            var tips = $('#copy_ok');
+            tips.css('margin-left', '-' + tips.outerWidth() / 2 + 'px').fadeIn("fast", function (e) {
+                setTimeout(function (e) {
+                    tips.fadeOut("fast");
+                }, 1500);
+            });
         });
-    });
 
-    $('#contribute').click(function () {
-        var tips = properties.tips;
-        tips.css('margin-top', '-' + tips.outerHeight(true) + 'px').fadeIn("fast", function (e) {
-            setTimeout(function (e) {
-                properties.tips.fadeOut("fast", function () {
-                    tips.removeAttr('style');
-                });
-            }, 5000);
+        $('#contribute').click(function () {
+            var tips = properties.tips;
+            tips.css('margin-top', '-' + tips.outerHeight(true) + 'px').fadeIn("fast", function (e) {
+                setTimeout(function (e) {
+                    properties.tips.fadeOut("fast", function () {
+                        tips.removeAttr('style');
+                    });
+                }, 5000);
+            });
         });
-    });
 
-    return function (account) {
-        properties.Contract = web3.eth.contract(abi).at(contractAddresses.Affiliate);
+        return function (account) {
+            properties.Contract = web3.eth.contract(abi).at(contractAddresses.Affiliate);
 
-        return Promise.all([
-            Promise.promisify(properties.Contract.total),
-            Promise.promisify(properties.Contract.getInfo),
-            Promise.promisify(properties.Contract.getValidMinisterCount),
-            Promise.promisify(properties.Contract.isRegistered),
-            Promise.promisify(properties.Contract.register),
-            Promise.promisify(properties.Contract.withdraw)
-        ]).then(function (_promisfied) {
-            // store promisified functions
-            blockchain.total = _promisfied[0];
-            blockchain.getInfo = _promisfied[1];
-            blockchain.getValidMinisterCount = _promisfied[2];
-            blockchain.isRegistered = _promisfied[3];
-            blockchain.register = _promisfied[4];
-            blockchain.withdraw = _promisfied[5];
-
-            // hook dom interaction event listeners
             return Promise.all([
-                superior.on('input', function (e) {
-                    validateAddress(this);
-                }),
-                $('#joinSubmit').on('click', onJoinButtonSubmit),
-                $('#account').text(account),
-                recommend.text(location.origin + location.pathname + '?' + account),
-                $('#withdraw').on('click', onWithdrawButtonSubmit),
-            ]);
-        }).then(function () {
-            $('#loadingSpinner').hide();
-            return blockchain.isRegistered(account);
-        }).then(function (promises) {
-            properties.ether = properties.Web3.toWei(1, 'ether');
-            if (promises) {
-                $(document.body).addClass('registered');
-                setInterval(refreshData, 10000);
-                refreshData();
-            }
-        });
-    };
-})()));
+                Promise.promisify(properties.Contract.total),
+                Promise.promisify(properties.Contract.getInfo),
+                Promise.promisify(properties.Contract.getValidMinisterCount),
+                Promise.promisify(properties.Contract.isRegistered),
+                Promise.promisify(properties.Contract.register),
+                Promise.promisify(properties.Contract.withdraw)
+            ]).then(function (_promisfied) {
+                // store promisified functions
+                blockchain.total = _promisfied[0];
+                blockchain.getInfo = _promisfied[1];
+                blockchain.getValidMinisterCount = _promisfied[2];
+                blockchain.isRegistered = _promisfied[3];
+                blockchain.register = _promisfied[4];
+                blockchain.withdraw = _promisfied[5];
+
+                // hook dom interaction event listeners
+                return Promise.all([
+                    superior.on('input', function (e) {
+                        validateAddress(this);
+                    }),
+                    $('#joinSubmit').on('click', onJoinButtonSubmit),
+                    $('#account').text(account),
+                    recommend.text(location.origin + location.pathname + '?' + account),
+                    $('#withdraw').on('click', onWithdrawButtonSubmit),
+                ]);
+            }).then(function () {
+                $('#loadingSpinner').hide();
+                return blockchain.isRegistered(account);
+            }).then(function (promises) {
+                properties.ether = properties.Web3.toWei(1, 'ether');
+                if (promises) {
+                    $(document.body).addClass('registered');
+                    setInterval(refreshData, 10000);
+                    refreshData();
+                }
+            });
+        };
+    })())();
+
+    if (typeof properties.Web3 === 'undefined') {
+        location.href = 'index.html?browser';
+    }
+});

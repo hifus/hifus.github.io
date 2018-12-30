@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>coToken首页</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css"
+          integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
           integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous"/>
@@ -12,6 +14,10 @@
         #hot a {
             color: black;
             font-size: 0.9rem;
+        }
+
+        .ok, .cancel {
+            background-color: lightgray!important;
         }
     </style>
 </head>
@@ -59,9 +65,25 @@
 <script src="js/popper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"
         integrity="sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=" crossorigin="anonymous"></script>
+<script src="js/alertify.js"></script>
+<script src="js/utils.js"></script>
 <script src="js/content.js"></script>
 <script>
     $(function () {
+        if (location.search.toLowerCase() === '?browser') {
+            if (is_android()) {
+                location.href = 'face2face.html?download';
+            } else if (is_iOS()) {
+                alertify.alert('请使用支持以太坊的钱包打开本页面。');
+            } else if (is_chrome() || is_firefox()) {
+                alertify.confirm('您的浏览器未安装以太坊钱包，点击“确定”跳转到“MetaMask下载”页面。', function () {
+                    location.href = 'metamask.html';
+                });
+            } else {
+                alertify.alert('您的浏览器不支持以太坊钱包，请使用谷歌浏览器(Chrome)或火狐浏览器(Firefox)。');
+            }
+        }
+
         $('#jump').on('click', function () {
             location.href = $('#url').val();
             return false;
@@ -89,7 +111,7 @@
                 }
             });
         }
-    })
+    });
 </script>
 </body>
 </html>
