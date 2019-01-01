@@ -706,6 +706,22 @@ function onWithdrawButtonSubmit() {
     }));
 }
 
+function addDividends() {
+    blockchain.pays(properties.lastPay + properties.n, properties.order).then(function (c) {
+        if (c[0] !== '0x') {
+            properties.dividends = c[3].mul(properties.fus).div(properties.ether).add(properties.dividends);
+            properties.order++;
+            setTimeout(addDividends, 10);
+        } else if (properties.order > 0) {
+            properties.n++;
+            properties.order = 0;
+            setTimeout(addDividends, 10);
+        } else {
+            $('#dividends').text(properties.dividends.div(properties.ether).toNumber());
+        }
+    });
+}
+
 $(start(function (account) {
     properties.CoTokenContract = web3.eth.contract(coTokenAbi).at(contractAddresses.coToken);
     properties.FusContract = web3.eth.contract(FusAbi).at(contractAddresses.Fus);
@@ -754,6 +770,8 @@ $(start(function (account) {
         Promise.promisify(properties.FusContract.validHolders),
 
         Promise.promisify(properties.DelegateContract.getValidFus),
+        Promise.promisify(properties.FusContract.lastPay),
+        Promise.promisify(properties.FusContract.pays),
     ]).then(function (_promisfied) {
         // store promisified functions
         blockchain.balanceOfETH = _promisfied[0];
@@ -774,6 +792,8 @@ $(start(function (account) {
         blockchain.validHolders = _promisfied[13];
 
         blockchain.getValidFus = _promisfied[14];
+        blockchain.lastPay = _promisfied[15];
+        blockchain.pays = _promisfied[16];
 
         // hook dom interaction event listeners
         return Promise.all([
@@ -801,6 +821,7 @@ $(start(function (account) {
             blockchain.nextPayTime(),
             blockchain.getValidFus(),
             blockchain.isTransferableFUS(),
+            blockchain.lastPay(account),
         ]);
     }).then(function (promises) {
         properties.ether = web3.toBigNumber(properties.Web3.toWei(1, 'ether'));
@@ -810,10 +831,16 @@ $(start(function (account) {
             $('#total').text(promises[0].add(promises[1]).div(properties.ether).toNumber());
             properties.fus = promises[2];
             $('#fus').text(promises[2].div(properties.ether).toNumber());
-            $('#dividends').text(promises[3].div(properties.ether).toNumber());
+            properties.dividends = promises[3];
+            //$('#dividends').text(promises[3].div(properties.ether).toNumber());
             $('#dividend_date').text(promises[4].gt(Math.pow(10, 20)) ? '未确定' : timestampString(promises[4].toNumber()));
             properties.validFus = promises[5];
             properties.isTransferableFUS = promises[6];
+            properties.lastPay = promises[7].toNumber() - 1;
+            properties.n = 0;
+            properties.order = 0;
+            addDividends();
+
             var tbl = $('#tbl');
             tbl.children(':not(:last)').remove();
             var last = tbl.children();
