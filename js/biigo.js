@@ -409,15 +409,7 @@ function getSummaryFunc() {
                         alertify.alert('获得' + (0.1 * (unpaid - properties.unpaidClean)) + ' ETH报酬');
                     }
                     properties.unpaidClean = unpaid;
-                    properties.cotoken = promises[5];
-                    properties.blockNumber = promises[6].toNumber();
-                    properties.checkCleaner = promises[7];
-                    if (properties.mines[properties.small].length === 0 && properties.nextTime.lt(properties.InvalidTime)) {
-                        properties.getValidGames();
-                        if (properties.getHistoryId === null) {
-                            properties.getHistoryId = setInterval(getMyHistories, 3000);
-                        }
-                    }
+                    $('#rewards').text(properties.validRewards.add(properties.ether.div(10).mul(properties.unpaidClean)).div(properties.ether).toPrecision(7));
                 }
             });
         }
@@ -927,8 +919,7 @@ $(start(function (account) {
 
         var getSummary = getSummaryFunc();
         getSummary();
-        $('#smallTab').click();
-        setInterval(getSummary, 1000);
-        setInterval(updateView, 2000);
+        //setInterval(getSummary, 1000);
+        //setInterval(updateView, 2000);
     });
 }));
