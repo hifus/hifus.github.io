@@ -7,7 +7,6 @@ window.hot = [
     ["minister.html", "images/special.png", "特级会员"],
     ["metamask.html", "images/metamask-logo.png", "MetaMask"],
     ["https://etherscan.io/", "images/EtherscanLogo.png", "Etherscan"],
-    ["biigo.html", "images/bg_old.png", "Biigo旧矿场"],
 ];
 
 window.announcement = [
