@@ -368,7 +368,7 @@ function updateData() {
         var goal = properties.goal.div(properties.price).toNumber();
         $('#goal').text(goal);
         if (goal > 0) {
-            var current = properties.current.div(properties.price).toNumber();
+            var current = properties.current.div(properties.price).floor().toNumber();
             $('#current').text(current).css('width', (current * 100 / goal).toFixed(3) + '%');
         }
         $('#expected').text(properties.expected.toFixed(7));
