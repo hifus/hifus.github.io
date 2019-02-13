@@ -421,6 +421,7 @@ function Scan() {
 function checkContract(callback) {
     var t = $('#target'), addr = t.val().toLowerCase(), danger, c = 'text-danger';
     if (isValidAddress(addr)) {
+        $('#target-sha3').text(web3.sha3(addr).substr(-6));
         danger = properties.contracts[addr];
         if (danger === true) {
             t.addClass(c);
@@ -444,6 +445,7 @@ function checkContract(callback) {
             });
         }
     } else {
+        $('#target-sha3').text('无效的地址');
         t.removeClass(c);
     }
 }
@@ -665,6 +667,7 @@ $(function () {
         new QRCode(qrcode[0], account);  // 设置要生成二维码的链接
         qrcode.find('img').addClass('mx-auto');
         $('#address').text(account);
+        $('#sha3').text(web3.sha3(account).substr(-6));
 
         properties.currencies = $('#currencies').children(':gt(0)');
 
@@ -703,6 +706,15 @@ $(function () {
             return Promise.all([
                 $('#sendBtn').on('click', onSendButtonSubmit),
                 $('#currencies').on('click', 'div:not(:first)', highLightMe),
+                $('#exchange').on('click', function (e) {
+                    if($(e.target).is(':checked')){
+                        $('#srcETH,#dstETH').prop('checked', true);
+                        $('#srcCotoken,#dstCotoken').prop('disabled', true);
+                    } else {
+                        //$('#srcETH,#dstETH').prop('checked', true);
+                        $('#srcCotoken,#dstCotoken').prop('disabled', false);
+                    }
+                }),
             ]);
         }).then(function () {
             $('#loadingSpinner').hide();
