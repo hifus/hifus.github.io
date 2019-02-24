@@ -422,6 +422,44 @@ function checkContract(callback) {
     var t = $('#target'), addr = t.val().toLowerCase(), danger, c = 'text-danger';
     if (isValidAddress(addr)) {
         $('#target-sha3').text(web3.sha3(addr).substr(-6));
+        $.getJSON('https://api.etherscan.io/api?module=account&action=txlist&sort=desc&address=' + addr, function (data) {
+            var res = data.result, n = res.length, s = '无';
+            if (n === 0) {
+                $('#sent_time').text(s);
+                $('#recv_time').text(s);
+                alertify.alert('<span style="color: red;">警告：目标账号无交易历史，可能是错误地址！<br><br>请仔细检查！</span>');
+            } else {
+                var sent = 0, recv = 0, i, tx;
+                for (i = 0; i < n; ++i) {
+                    tx = res[i];
+                    if (tx.from !== tx.to) {
+                        if (tx.from === addr) {
+                            if (sent === 0) {
+                                sent = parseInt(tx.timeStamp);
+                                if (recv > 0) break;
+                            }
+                        } else {
+                            if (recv === 0) {
+                                recv = parseInt(tx.timeStamp);
+                                if (sent > 0) break;
+                            }
+                        }
+                    }
+                }
+                if (sent > 0) {
+                    i = (new Date(sent * 1000)).toLocaleString();
+                } else {
+                    i = s;
+                }
+                $('#sent_time').text(i);
+                if (recv > 0) {
+                    i = (new Date(recv * 1000)).toLocaleString();
+                } else {
+                    i = s;
+                }
+                $('#recv_time').text(i);
+            }
+        });
         danger = properties.contracts[addr];
         if (danger === true) {
             t.addClass(c);
