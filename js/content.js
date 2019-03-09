@@ -10,7 +10,7 @@ window.hot = [
 ];
 
 window.announcement = [
-	["LW2第27轮开奖","2019-3-9","LW2第27轮开奖了，原因是碰到一个不含任何交易的块：7331865块！<a href=\"https://etherscan.io/tx/0x5773081579df71f6fbd695a842793abdf9fb1cdcbbf5d1b92e5a84becf05a8cc\">最后一注</a>执行在7331864块，下一块<a href=\"https://etherscan.io/block/7331865\">7331865</a>用了65秒才算出，并且它不含任何交易（这是允许出现的）。等到20秒后执行<a href=\"https://etherscan.io/block/7331866\">7331866</a>块中的请求时，倒数已经结束了！", true],
+	["LW2第27轮开奖","2019-3-9","LW2第27轮开奖了，原因是碰到一个不含任何交易的块：7331865块！<a href=\"https://etherscan.io/tx/0x5773081579df71f6fbd695a842793abdf9fb1cdcbbf5d1b92e5a84becf05a8cc\">最后购买种子</a>执行在7331864块，下一块<a href=\"https://etherscan.io/block/7331865\">7331865</a>用了65秒才算出，并且它不含任何交易（这是允许出现的）。等到20秒后执行<a href=\"https://etherscan.io/block/7331866\">7331866</a>块中的请求时，倒数已经结束了！所以，提前1、2分钟购买种子很重要，幸运一次就足够翻本了！", true],
 	["LW2第24轮开奖","2019-2-28","LW2第24轮开奖了，同样是因为长时间块！<a href=\"https://etherscan.io/tx/0xa5b3712f43fce1deabbe9988c15e5bec24fc4dfab63992ebd3988f12c95d51b1\">最后一注</a>执行在7278384块，下一块<a href=\"https://etherscan.io/block/7278385\">7278385</a>用了133秒才算出。等到执行7278385块中的请求时，倒数已经结束了！", true],
     ["LW2第22、23轮开奖","2019-2-28","第22、23轮开奖了，投注分别是<a href=\"https://etherscan.io/tx/0xa4559d61277a18747cf6ec0458146c9a67f8e85731dc9548763520e151d262f4\">22轮</a>和<a href=\"https://etherscan.io/tx/0xd7101a99a6570ed41f6cf07023de8741fe6fcd4c2ad89d248d4d6dbd23eb8266\">23轮</a>，分别属于7266365块和7275885块。而此后的<a href=\"https://etherscan.io/block/7266366\">7266366</a>块和<a href=\"https://etherscan.io/block/7275886\">7275886</a>块，分别用了110秒和99秒才挖出。也就是，如果有人在离结束1:30秒时发出购买命令，最快也要1分50秒及1分33秒后才会被执行，会给人一直买不进的感觉。但当执行时倒数可能已经结束了。当前平均出块速度约20秒，但也可能会出现甚至2、3分钟才出一个块的情况，幸运留给持续坚守的人！", true],
 ];
