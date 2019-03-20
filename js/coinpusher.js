@@ -290,6 +290,7 @@ function updateView() {
 
         if (properties.selected >= 0) {
             showPusherCoins();
+            _setCoin(parseInt($('#coin').val()));
         }
     }
 
