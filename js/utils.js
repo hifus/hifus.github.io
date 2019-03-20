@@ -3,7 +3,6 @@
 window.properties = {
     'Contract': null,
     'LastBlock': 0,
-    'NewBlock': 0,
     'processedTxs': {},
     'conversationRates': {}
 };
@@ -158,8 +157,95 @@ function start(f) {
             if (properties.Web3.eth.accounts.length > 0) {
                 var account = properties.Web3.eth.accounts[0].toLowerCase();
                 properties.Web3.eth.defaultAccount = account;
+                properties.ether = web3.toBigNumber(properties.Web3.toWei(1, 'ether'));
+                properties.bn0 = web3.toBigNumber('0');
+                properties.bn2 = web3.toBigNumber('2');
+                blockchain.getBlockNumber = Promise.promisify(properties.Web3.eth.getBlockNumber);
 
-                f(account, loadingText).catch(function (err) {
+                var listeners = [];
+                var routines = [];
+                window.addBlockListener = function (fn, interval) {
+                    if (typeof fn === 'function') {
+                        interval = parseInt(interval);
+                        if (isNaN(interval) || !isFinite(interval)) interval = 1;
+                        if (interval > 0) {
+                            listeners.push([fn, properties.LastBlock, interval]);
+                        }
+                    }
+                };
+
+                window.addIntervalRoutine = function (fn, interval) {
+                    if (typeof fn === 'function') {
+                        interval = parseInt(interval);
+                        if (isNaN(interval) || !isFinite(interval)) interval = 1;
+                        if (interval > 0) {
+                            routines.push([fn, Math.floor((new Date()).getTime() / 1000), interval]);
+                        }
+                    }
+                };
+
+                window.updateToBlock = function (p, fn, fnGetBlock) {
+                    if (typeof fnGetBlock !== 'function') {
+                        var idx = (typeof fnGetBlock !== 'number') ? 0 : parseInt(fnGetBlock);
+                        fnGetBlock = function (promises) {
+                            return promises[idx].toNumber();
+                        };
+                    }
+                    var blockNumber = 0;
+                    var running = false;
+
+                    var _f = function () {
+                        if (running) return;
+                        running = true;
+
+                        p().then(function (promises) {
+                            //(block.number, data[51], totalBonus[SafeMath.hash(msg.sender)], coToken(coTokenAddress).balanceOf(msg.sender), (dateBuy[statTime >> 64] << 64) + uint64(now));
+                            var _blockNumber = fnGetBlock(promises);
+                            if (_blockNumber > blockNumber) {
+                                blockNumber = _blockNumber;
+                                fn(promises);
+                                if (blockNumber < properties.LastBlock) {
+                                    running = false;
+                                    _f();
+                                    return;
+                                }
+                            }
+                            running = false;
+                        }).catch(function (err) {
+                            running = false;
+                            _f();
+                        });
+                    };
+
+                    return _f;
+                };
+
+                f(account, loadingText).then(function () {
+                    setInterval(function () {
+                        if (listeners.length) {
+                            blockchain.getBlockNumber().then(function (_blockNum) {
+                                if (_blockNum > properties.LastBlock) {
+                                    properties.LastBlock = _blockNum;
+                                    $.each(listeners, function (i, e) {
+                                        var n = _blockNum - e[1];
+                                        if (n >= e[2]) {
+                                            e[1] += Math.floor(n / e[2]) * e[2];
+                                            e[0]();
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        var now = Math.floor((new Date()).getTime() / 1000);
+                        $.each(routines, function (i, e) {
+                            var n = now - e[1];
+                            if (n >= e[2]) {
+                                e[1] += Math.floor(n / e[2]) * e[2];
+                                e[0]();
+                            }
+                        });
+                    }, 1000);
+                }).catch(function (err) {
                     console.log("出错了", err);
                 });
             } else {

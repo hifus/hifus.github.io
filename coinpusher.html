@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>幸运推币</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css"
+          integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="css/alertify.css"/>
+    <style>
+        #loadingSpinner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, .85);
+            display: block;
+            opacity: 1;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        #loadingSpinner > * {
+            color: rgba(0, 0, 0, .87);
+            z-index: 1000;
+            position: absolute;
+            left: 0;
+            top: 45%;
+            width: 100%;
+            text-align: center;
+            font-size: x-large;
+        }
+
+        #loadingText.waiting {
+            top: 30%;
+            padding-top: 5rem;
+        }
+
+        #loadingText.waiting:before {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 50%;
+            background-image: url('images/loader_gray.gif');
+            background-size: 4.57142857rem 4.57142857rem;
+            width: 4.57142857rem;
+            height: 4.57142857rem;
+            margin: 0 0 0 -2.28571429rem;
+        }
+
+        #mine_lines li {
+            text-align: left;
+        }
+
+        #nav-tab .nav-link {
+            padding: .5rem .8rem;
+        }
+
+        #mines .col-4 {
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+        }
+
+        #waiting {
+            position: absolute;
+            width: 100%;
+            top: 50%;
+            left: 0;
+            margin-top: -1rem;
+        }
+
+        #history a {
+            padding: .5rem .3rem;
+        }
+
+        #nav-rule td {
+            vertical-align: middle;
+        }
+
+        .modal-lg {
+            max-width: 100%;
+        }
+
+        .mine {
+            cursor: pointer;
+            font-size: .8rem;
+        }
+
+        .mine:hover {
+            background-color: rgba(0, 0, 0, .075);
+        }
+
+        #countdown {
+            font-size: 1.5rem;
+            color: #0070ff;
+            font-family: Monaco;
+            font-weight: 900;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #e9ecef;
+            opacity: 0.8;
+        }
+
+        #countdown div {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -5rem;
+        }
+
+        .mine.diamond .progress {
+            background-color: #49bade;
+        }
+
+        .mine.diamond .progress-bar {
+            background-color: #2b4167;
+        }
+
+        .mine.gold .progress {
+            background-color: #dacd17;
+        }
+
+        .mine.gold .progress-bar {
+            background-color: #e47c13;
+        }
+
+        .mine .img {
+            height: 72px;
+            width: 72px;
+            margin: auto;
+        }
+
+        .mine.diamond .img {
+            background-image: url("images/diamond_mine.jpg");
+        }
+
+        .mine.gold .img {
+            background-image: url("images/gold_mine.jpg");
+        }
+
+        .mine.full .img {
+            background-image: url("images/digging.gif");
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            -moz-background-size: 100% 100%;
+        }
+
+        .mine.discarded .img {
+            background-image: url("images/discarded.jpg");
+            opacity: .5;
+        }
+
+        .mine.joined .img:after {
+            font-family: "Font Awesome 5 Free";
+            content: "\f0c0";
+            color: #00ffde;
+            font-size: 1rem;
+            font-weight: 900;
+            float: right;
+        }
+
+        #tips {
+            display: none;
+        }
+
+        @media screen and (orientation: portrait) and (max-width: 666px) {
+            #details {
+                display: none;
+            }
+
+            #tips {
+                display: block;
+            }
+        }
+
+        .few {
+            background-color: red;
+            color: white;
+        }
+
+        .some {
+            background-color: #caca00;
+            color: white;
+        }
+
+        .several {
+            background-color: green;
+            color: white;
+        }
+
+        .many {
+            background-color: blue;
+            color: white;
+        }
+
+        .huge {
+            background-color: purple;
+            color: white;
+        }
+
+        .map {
+            text-align: center !important;
+            padding-left: .25rem !important;
+            padding-right: .25rem !important;
+        }
+
+        .map td {
+            width: 0.6rem;
+            line-height: 0.6rem;
+            padding: 0 !important;
+        }
+
+        #coins td {
+            min-width: 2rem;
+            line-height: 2rem;
+            padding: 0 !important;
+        }
+
+        #coins td.selected {
+            background-color: black;
+            color: white;
+        }
+
+        #coins, .map table {
+            margin-left: auto;
+            margin-right: auto;
+            border-color: #888;
+            text-align: center;
+            border-style: none;
+        }
+
+        #coins td.tips {
+            color: gray;
+            border-style: none;
+            font-size: small;
+            min-width: 1px;
+        }
+
+        #coins td.left {
+            text-align: right;
+            padding-right: 3px !important;
+        }
+
+        #coins td.bottom {
+            vertical-align: top;
+            line-height: 1rem;
+            padding-top: 3px !important;
+        }
+
+        #coins td.top {
+            vertical-align: bottom;
+            line-height: 1rem;
+        }
+
+        .name {
+            font-weight: bold;
+        }
+
+        #PlayModal:not(.showHistory) #historyButton, #PlayModal:not(.showHistory) #historyPanel, #PlayModal.showHistory #playButtons, #PlayModal.showHistory #playPanel {
+            display: none;
+        }
+
+        #histories button {
+            border: 0;
+            padding: 0;
+            font-weight: normal;
+            font-size: x-small;
+            vertical-align: top;
+        }
+
+        #histories hr {
+            clear: both;
+            margin: 0;
+        }
+
+        #histories span, #histories a {
+            word-break: break-all;
+        }
+
+        #coins td.profitable {
+            color: green;
+            font-weight: bold;
+        }
+
+        .alertify {
+            z-index: 2000;
+        }
+    </style>
+</head>
+<body style="background-color: #262425;">
+<section>
+    <div class="container text-dark mt-0">
+        <div class="row">
+            <div class="col-12 mx-auto">
+                <img src="images/coinpusher.jpg" alt="mine" style="width: 100%">
+            </div>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="container text-dark mt-2">
+        <div class="row">
+            <div class="col-12 col-md-6 mx-auto">
+                <div style="padding: 1rem 0;margin-bottom: 2rem;background-color: white;border-radius: .3rem;"
+                     class="py-3">
+                    <div class="row text-center mx-0">
+                        <div class="col-12" id="pushers">
+                            <h3 class="mb-3">幸运推币</h3>
+                            <div class="row">
+                                <div class="col-4 map" data-no="0">
+                                    <table border="1"></table>
+                                    <div class="name">一帆风顺</div>
+                                    <small class="info"></small>
+                                </div>
+                                <div class="col-4 map" data-no="1">
+                                    <table border="1"></table>
+                                    <div class="name">万事如意</div>
+                                    <small class="info"></small>
+                                </div>
+                                <div class="col-4 map" data-no="2">
+                                    <table border="1"></table>
+                                    <div class="name">丁财两旺</div>
+                                    <small class="info"></small>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-4 map" data-no="3">
+                                    <table border="1"></table>
+                                    <div class="name">生龙活虎</div>
+                                    <small class="info"></small>
+                                </div>
+                                <div class="col-4 map" data-no="4">
+                                    <table border="1"></table>
+                                    <div class="name">马到成功</div>
+                                    <small class="info"></small>
+                                </div>
+                                <div class="col-4 map" data-no="5">
+                                    <table border="1"></table>
+                                    <div class="name">金玉满堂</div>
+                                    <small class="info"></small>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-4 map" data-no="6">
+                                    <table border="1"></table>
+                                    <div class="name">鸿运当头</div>
+                                    <small class="info"></small>
+                                </div>
+                                <div class="col-4 map" data-no="7">
+                                    <table border="1"></table>
+                                    <div class="name">步步高升</div>
+                                    <small class="info"></small>
+                                </div>
+                                <div class="col-4 map" data-no="8">
+                                    <table border="1"></table>
+                                    <div class="name">一本万利</div>
+                                    <small class="info"></small>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-4 map" data-no="9">
+                                    <table border="1"></table>
+                                    <div class="name">心想事成</div>
+                                    <small class="info"></small>
+                                </div>
+                                <div class="col-4 map" data-no="10">
+                                    <table border="1"></table>
+                                    <div class="name">福如东海</div>
+                                    <small class="info"></small>
+                                </div>
+                                <div class="col-4 map" data-no="11">
+                                    <table border="1"></table>
+                                    <div class="name">出入平安</div>
+                                    <small class="info"></small>
+                                </div>
+                            </div>
+                        </div>
+                        <small class="m-3"><a href="javascript:void(0)" style="text-decoration: underline;"
+                                              id="DailyBuyButton">每日总投入</a></small>
+                        <div id="loadingSpinner">
+                            <div id="loadingText" class="d-none waiting">正在连接MetaMask...</div>
+                            <noscript>
+                                此页面需要执行Javascript。
+                            </noscript>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 mx-auto">
+                <div style="padding: 1rem 0;margin-bottom: 2rem;background-color: white;border-radius: .3rem;">
+                    <div class="col-12">
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home"
+                                   role="tab" aria-controls="nav-home" aria-selected="true">收益</a>
+                                <a class="nav-item nav-link" id="nav-rule-tab" data-toggle="tab" href="#nav-rule"
+                                   role="tab"
+                                   aria-controls="nav-rule" aria-selected="false">说明</a>
+                                <a class="nav-item nav-link" id="nav-algorithms-tab" data-toggle="tab"
+                                   href="#nav-algorithms"
+                                   role="tab" aria-controls="nav-algorithms" aria-selected="false">算法</a>
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-home" role="tabpanel"
+                                 aria-labelledby="nav-home-tab">
+                                <div class="row pt-2">
+                                    <div class="col-12 pt-3">
+                                        <h2>我的收益：<br><span id="rewards">0</span>
+                                            <img src="images/gold.png"
+                                                 style="height: 3rem;margin-top: -10px;margin-left: 0;">
+                                        </h2>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <div id="withdrawOk" class="alert alert-success col-auto mx-auto"
+                                                 style="display: none;z-index: 100;" role="alert">提取收益成功
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4 mx-auto mt-2">
+                                        <button id="withdraw" class="btn btn-block btn-lg btn-primary">
+                                            提取收益
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-rule" role="tabpanel" aria-labelledby="nav-rule-tab">
+                                <div class="row">
+                                    <div class="col-12 pt-3">
+                                        <h5>推币机 规则说明</h5>
+                                        <p>1. 游戏模拟现实的推币机，玩家通过投币，把游戏中的币推出从而获得奖励。</p>
+                                        <p>2. 玩家向游戏中投币，所投币会随机跌落游戏中的某一单元格，此时，若所在列的所有单元格都含有等于或大于100枚币，则成功推出币。</p>
+                                        <p>3. <b>注意：投币时每枚币需支付0.012ETH，而推出的币，每枚只价值0.01ETH，原因请参看底部的资金分配表格。因此用少量币推出大量币，才能盈利。</b></p>
+                                        <p>4. 每次投币数量最少为1枚，最多为100枚，超出部分将返还到coToken账号。</p>
+                                        <p>5. 投币时，玩家需选择一个最希望跌落的格子，投币落在该格子的概率是其余格子的3倍。</p>
+                                        <p>6. 每个格子会根据所含币的数量，显示不同的颜色：
+                                            <span class="few">0~79为红色</span>，
+                                            <span class="some">80~99为土黄色</span>，
+                                            <span class="several">100~199为绿色</span>，
+                                            <span class="many">200~499为蓝色</span>，
+                                            <span class="huge">500及以上为紫色</span>。
+                                        </p>
+                                        <p>7.
+                                            玩家输入投币数量后，游戏会预计出每列最大的出币量，其中能盈利的结果会绿色粗体显示，帮助玩家进行决策。投入不同数量的币，也会推出不同数量的币，具体算法请参看算法页面。</p>
+                                        <p>8.
+                                            每个推币机，每天最多能进行一次整理。每天晚上12:00到12:30，管理方可发起整理申请，此时还有10分钟时间继续正常进行游戏。10分钟后，进入整理状态，游戏暂停，不接受投币。管理方可在此30分钟内整理推币机并提交整理结果，过时不提交整理结果，视为放弃整理。整理结束后，有10分钟的倒计时，然后游戏继续正常进行。</p>
+                                        <p>9.
+                                            管理方在整理时间内，可调整推币机的行列数，行数量为4~8，列数量也是4~8。推币机内单元格的所含币数也可进行任意调整，但调整后的币数总和，不能小于调整前的币数总和，也就是只允许加入币，但绝不能取走币。</p>
+                                        <p>a. 每个账号累计每投入0.1ETH，将获得5FUS的额外奖励，FUS可视作股权用于分红。</p>
+                                        <p>b.
+                                            参与游戏的Gas价格上限为30GWei，Gas价格超过上限的请求会被拒绝。Gas价格也不要低于2G，否则该请求可能永久不被矿工执行，也对该账号以后的请求有一定阻碍。</p>
+                                        <p>c. 每个推币机都会保留最近20次投币记录用于查询。</p>
+                                        <p>d. 本游戏所有奖励都发送到coToken账号中，所有无效购买也会返还到coToken账号中，请自行提取为ETH。</p>
+                                        <p>e. 若coToken余额足够用于投币，本游戏会优先使用coToken中的余额，减少矿工费的支出，此时需要支付的ETH为0。</p>
+                                        <p>f.
+                                            本游戏部分资金用于玩家FUS分红。向本游戏累计投入0.1ETH即永久获得本游戏分红资格，分红数量按照分红时持有的FUS数量进行计算。本游戏投入不足0.1ETH的账号，所持有的FUS不参与本游戏的玩家分红计算。</p>
+                                        <p>g.
+                                            本游戏还有部分资金用于全民FUS分红。所有持有FUS的用户，无论是否参与本游戏，都可得到与其FUS数量占比相当的分红！（本游戏玩家既可得到玩家分红，也可得到全民分红。）</p>
+
+                                        <table class="table table-sm text-center" style="font-size: .8rem;">
+                                            <thead>
+                                            <tr>
+                                                <th colspan="3">资金分配</th>
+                                            </tr>
+                                            <tr>
+                                                <th>用途</th>
+                                                <th>数量（每投1币0.012）</th>
+                                                <th>比例</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr>
+                                                <td>留在推币机中</td>
+                                                <td>0.01</td>
+                                                <td>83.33%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>全民FUS分红</td>
+                                                <td>0.0005</td>
+                                                <td>4.17%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>玩家FUS分红</td>
+                                                <td>0.0005</td>
+                                                <td>4.17%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>上级提成</td>
+                                                <td>0.0006</td>
+                                                <td>5%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>上上级提成</td>
+                                                <td>0.0003</td>
+                                                <td>2.5%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>平台费用</td>
+                                                <td>0.0001</td>
+                                                <td>0.83%</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-algorithms" role="tabpanel"
+                                 aria-labelledby="nav-algorithms-tab">
+                                <div class="row">
+                                    <div class="col-12 pt-3">
+                                        <p class="small">(有关散列值的简单介绍，请参见“Biigo矿场”中的算法页)</p>
+                                        <p>本游戏的关键算法有两个：计算投币跌落位置的算法 和 计算推出币数的算法。</p>
+                                        <p><b>1.计算投币跌落位置</b></p>
+                                        <p>每个推币机，各自都有一个16进制为104位的数，称为随机种子。每一次投币成功，都会使用当前的随机种子，并根据投币的环境，计算出跌落位置，同时计算出一个新的随机种子，在下次投币时使用。未进行过投币时，随机种子的初始值为0。</p>
+                                        <p>有玩家进行投币时，合约会组合指定数据，形成一个组合值s，具体组合方式从高位到低位为：</p>
+                                        <p>请求所在块号(32位)、请求所在块难度值(44位)、推币机编号(4位)、玩家期望位置编号(8位)、散列值h1(32位)、请求所在块时间戳(32位)、随机种子(104位)</p>
+                                        <p>其中散列值h1又由如下方式算出：</p>
+                                        <p>( keccak256(挖出请求所在块的矿工账号) % 请求所在块时间戳 ) 的低32位。</p>
+                                        <p>得到组合值s后，计算散列值h2=keccak256(s)。</p>
+                                        <p>跌落位置r=散列值h2 % (本推币机的单元格总数 + 2)，若r大于等于单元格总数，则使用玩家期望的位置（在历史记录中会出现“期望位置”字样）。</p>
+                                        <p>而散列值h2的低104位，就是新的随机种子，在下一次投币成功时使用。</p>
+                                        <p>整理推币机，不改变当前的随机种子</p>
+                                        <p><b>2.计算推出币数</b></p>
+                                        <p>只有某列的所有单元格里的币数都大于等于100时，才会推出币。</p>
+                                        <p>出币时，第1（最下面）行，保留80币，多于80币的部分，占有原来数量的比例，也就是该列每个单元格向前一格推币的比例。而最上面的单元格，推出的币数，就是玩家获得的币数。请看下图：</p>
+                                        <img style="border: 1px #80808030 solid;margin-bottom: .5rem;" src="images/pusher1.png">
+                                        <p>作为对比，若第1行含有110币呢？再看下图：</p>
+                                        <img style="border: 1px #80808030 solid;margin-bottom: .5rem;" src="images/pusher2.png">
+                                        <p>从上两图对比中，不难发现，只增加了10币投入，推出币数就多了35，还是相当可观的！而且，投币数不参与计算跌落位置，也就是投币多少，与跌落位置没有关系。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="modal fade text-dark" id="PlayModal" tabindex="-1" role="dialog" aria-labelledby="PlayModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header p-2">
+                <h5 class="modal-title mx-auto" id="PlayModalLabel"></h5>
+            </div>
+            <div class="modal-body px-0 pt-2 pb-1">
+                <div class="container">
+                    <div class="row" id="playPanel">
+                        <div class="col-12 px-0">
+                            <div class="map">
+                                <table border="1" id="coins"></table>
+                                <small id="info"></small>
+                            </div>
+                            <form id="playForm" class="mt-3 px-3">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control text-monospace"
+                                               style="font-size: 1.1rem;"
+                                               id="coin" name="coin" placeholder="@0.012ETH"
+                                               aria-describedby="playHelp" min="1" max="100" step="1">
+                                        <span id="playHelp" class="form-text text-muted"
+                                              style="display: none;">请填入您要投币的数量</span>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                选择数量
+                                            </button>
+                                            <div class="dropdown-menu" id="coinNum">
+                                                <a class="dropdown-item">1</a>
+                                                <a class="dropdown-item">2</a>
+                                                <a class="dropdown-item">5</a>
+                                                <a class="dropdown-item">10</a>
+                                                <a class="dropdown-item">20</a>
+                                                <a class="dropdown-item">50</a>
+                                                <a class="dropdown-item">100</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto mx-auto px-0" id="addBtns">
+                                        <button type="button" class="btn btn-outline-primary">
+                                            +1
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary">
+                                            +5
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary">
+                                            +10
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary">
+                                            +50
+                                        </button>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <div id="invNumber" class="alert alert-danger col-auto mx-auto"
+                                                 style="display: none;z-index: 100;"
+                                                 role="alert">无效的投币数量
+                                            </div>
+                                            <div id="noGoal" class="alert alert-danger col-auto mx-auto"
+                                                 style="display: none;z-index: 100;"
+                                                 role="alert">未选择目标位置，请点选表格内小格。
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 text-left mt-3">
+                                        <h6 style="float: left;">投币支出：<span id="cost">0</span>
+                                            <img src="images/gold.png"
+                                                 style="height: 2rem;margin-top: -10px;margin-left: 5px;">
+                                        </h6>
+                                        <h6 style="float: right;"><a href="javascript:void(0)"
+                                                                     style="text-decoration: underline;"
+                                                                     id="showHistories">查看历史</a></h6>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row" id="historyPanel">
+                        <div class="col-12 p-2">
+                            <ul class="list-group" id="histories"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="playButtons">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="confirm">确定</button>
+            </div>
+            <div class="modal-footer" id="historyButton">
+                <button type="button" class="btn btn-secondary" id="back">返回</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade text-dark" id="DailyBuyModal" tabindex="-1" role="dialog" aria-labelledby="DailyBuyModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title mx-auto" id="DailyBuyModalLabel">每日总投入</h5>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-sm text-center" style="border-top-style: hidden;">
+                                <thead>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>投入ETH</th>
+                                </tr>
+                                </thead>
+                                <tbody id="dailyBuy">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.5/umd/popper.min.js"
+        integrity="sha256-VTBbuQQf3bpp1u7pm5VrsWn+Wn6chOiW2U1dOMBg9Zs=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=" crossorigin="anonymous"></script>
+<script src="js/alertify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"
+        integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.5.2/bluebird.min.js"
+        integrity="sha256-KxHSEnmbcOfmmoeGOLsNUpBeOrNbssSJ3fyskCGsN6M=" crossorigin="anonymous"></script>
+<script src="js/contracts.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/coinpusher.js"></script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 window.hot = [
-    ["biigo2.html", "images/bg.png", "Biigo矿场"],
     ["lastwinner2.html", "images/lw2.png", "LastWinner2"],
+    ["biigo2.html", "images/bg.png", "Biigo矿场"],
+    ["coinpusher.html", "images/coinpusher.png", "幸运推币"],
     ["a.html", "images/affiliate.jpg", "加入层级"],
     ["assets.html", "images/assets.png", "我的资产"],
     ["face2face.html", "images/f2f.png", "面对面收发"],
