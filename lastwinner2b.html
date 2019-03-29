@@ -147,7 +147,7 @@
                         <img src="images/gold.png">
                         <h1 class="mb-0"><span id="rewards">0.000000</span></h1>
                         <small style="line-height: 1px;">累计投入: <span id="totalFunds">0</span> <img src="images/gold.png"
-                                                                      style="height: 1.5rem;margin-top: -6px;margin-left: 5px;">
+                                                                                                   style="height: 1.5rem;margin-top: -6px;margin-left: 5px;">
                         </small>
                         <div style="margin-top: .6rem;" id="vaderSize">
                             <div>第<span id="target">0</span>节目标</div>
@@ -221,7 +221,107 @@
                 <div class="jumbotron py-3">
                     <div class="row text-center">
                         <hr>
-                        <div class="col-12"><h1 style="color:red;">新版LW2已上线<br>请勿在此投注<br>并尽快提取收益！</h1></div>
+                        <div class="col-12">
+                            <form id="buyForm">
+                                <div class="form-group text-left">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="rob"
+                                               value="1" checked>
+                                        <label class="form-check-label" for="rob">抢奖</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="save"
+                                               value="0">
+                                        <label class="form-check-label" for="save">护奖</label>
+                                    </div>
+                                    <div id="autoRewards" class="d-inline">人手验奖</div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control text-monospace"
+                                               style="font-size: 1.1rem;"
+                                               id="seed" name="seed" placeholder="@0.002ETH"
+                                               aria-describedby="buyHelp" min="1" max="500" step="1">
+                                        <span id="buyHelp" class="form-text text-muted"
+                                              style="display: none;">请填入您要购买的种子数量</span>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                选择数量
+                                            </button>
+                                            <div class="dropdown-menu" id="seedNum">
+                                                <a class="dropdown-item">1</a>
+                                                <a class="dropdown-item">2</a>
+                                                <a class="dropdown-item">5</a>
+                                                <a class="dropdown-item">10</a>
+                                                <a class="dropdown-item">20</a>
+                                                <a class="dropdown-item">50</a>
+                                                <a class="dropdown-item">100</a>
+                                                <a class="dropdown-item">200</a>
+                                                <a class="dropdown-item">500</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="row">
+                                <div class="col-auto mx-auto px-0" id="addBtns">
+                                    <button class="btn btn-outline-danger">
+                                        +1
+                                    </button>
+                                    <button class="btn btn-outline-danger">
+                                        +5
+                                    </button>
+                                    <button class="btn btn-outline-danger">
+                                        +10
+                                    </button>
+                                    <button class="btn btn-outline-danger">
+                                        +50
+                                    </button>
+                                    <button class="btn btn-outline-danger">
+                                        +100
+                                    </button>
+                                </div>
+                                <div class="col-12">
+                                    <div class="row">
+                                        <div id="buyOk" class="alert alert-success col-auto mx-auto"
+                                             style="display: none;z-index: 100;"
+                                             role="alert">购买成功
+                                        </div>
+                                        <div id="buyFail" class="alert alert-danger col-auto mx-auto"
+                                             style="display: none;z-index: 100;"
+                                             role="alert">购买失败<br>资金返还到coToken中
+                                        </div>
+                                        <div id="invSeed" class="alert alert-danger col-auto mx-auto"
+                                             style="display: none;z-index: 100;"
+                                             role="alert">无效的种子数量
+                                        </div>
+                                        <div id="robSeed" class="alert alert-danger col-auto mx-auto"
+                                             style="display: none;z-index: 100;"
+                                             role="alert">种子数量不能小于节数
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 text-left mt-3">
+                                    <h6>购买支出：<span id="cost">0</span>
+                                        <img src="images/gold.png"
+                                             style="height: 2rem;margin-top: -10px;margin-left: 5px;">
+                                    </h6>
+                                    <h6>预期收益：<span id="expectedProfit">0</span>
+                                        <img src="images/gold.png"
+                                             style="height: 2rem;margin: -10px 5px 0;">(<span id="percent">0</span>%)
+                                    </h6>
+                                </div>
+                                <div class="col-sm-4 mx-auto mt-2">
+                                    <button id="buySubmit" class="btn btn-block btn-lg btn-danger">
+                                        马上抢奖
+                                    </button>
+                                    <div class="text-left">
+                                        <small id="gasLimit">Gas价格上限为20 GWei</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div id="loadingSpinner">
                             <div id="loadingText" class="d-none waiting">正在连接MetaMask...</div>
                             <noscript>
@@ -240,10 +340,11 @@
                                    role="tab" aria-controls="nav-home" aria-selected="true">概览</a>
                                 <a class="nav-item nav-link" id="nav-history-tab" data-toggle="tab" href="#nav-history"
                                    role="tab" aria-controls="nav-history" aria-selected="false">赢家</a>
-                                <a class="nav-item nav-link" id="nav-role-tab" data-toggle="tab" href="#nav-role"
+                                <a class="nav-item nav-link" id="nav-rule-tab" data-toggle="tab" href="#nav-rule"
                                    role="tab"
-                                   aria-controls="nav-role" aria-selected="false">说明<span style="font-size: xx-small">(补)</span></a>
-                                <a class="nav-item nav-link" id="nav-algorithms-tab" data-toggle="tab" href="#nav-algorithms"
+                                   aria-controls="nav-rule" aria-selected="false">说明</a>
+                                <a class="nav-item nav-link" id="nav-algorithms-tab" data-toggle="tab"
+                                   href="#nav-algorithms"
                                    role="tab" aria-controls="nav-algorithms" aria-selected="false">算法</a>
                             </div>
                         </nav>
@@ -263,6 +364,7 @@
                                             <img src="images/gold.png"
                                                  style="height: 3rem;margin-top: -10px;margin-left: 0;">
                                         </h2>
+                                        <h2>可提FUS：<br><span id="fus">0</span></h2>
                                     </div>
                                     <div class="col-12">
                                         <div class="row">
@@ -287,26 +389,33 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="tab-pane fade" id="nav-role" role="tabpanel" aria-labelledby="nav-role-tab">
+                            <div class="tab-pane fade" id="nav-rule" role="tabpanel" aria-labelledby="nav-rule-tab">
                                 <div class="row">
                                     <div class="col-12 pt-3">
-                                        <h5>Last Winner 2 规则说明<span style="font-size: small">（增补版）：</span></h5>
+                                        <h5>Last Winner 2 改进版 规则说明</h5>
                                         <p>1. 游戏中，倒计时开始至倒计时结束称为一轮，每一轮分为若干节。</p>
-                                        <p>2. 倒计时结束前，可以通过买入种子获取收益，在每一节内越早买入则收益越大。</p>
-                                        <p>3. 买入时Gas价格不要低于4G，否则该请求可能永久不被矿工执行，也对该账号以后的请求有一定阻碍。</p>
-                                        <p>4. 游戏中奖池奖金由两部分加成：A部分为上一节节内分红后的余额、B部分为本节已投额度的66.4%。</p>
-                                        <p>5. 倒计时结束时，最后买入种子的账号，将会赢得最终大奖，数额是奖池奖金的一半，即(A+B)/2。并且奖池奖金中B部分的另一半会积累在下一次的FUS分红总额中。</p>
-                                        <p>6. 每颗种子需要0.002ETH，每次至少买入1颗。每买入1颗种子，倒计时延长5秒，最多延长至3小时。</p>
-                                        <p>7. 累计购买每满50颗种子，可获得13 FUS的额外奖励，FUS可视作股权用于分红。</p>
-                                        <p>8. 每一节都有目标任务，当达到了目标任务后，本节内66.4%资金返还当节玩家，越早购买收益越大，游戏开始下一节，倒计时也延长120秒。</p>
-                                        <p>9. 若倒计时结束，则当节的积累资金归入奖池，并被Last Winner提取，当节玩家无收益。游戏10分钟后进入下一轮。</p>
-                                        <p>a. 每轮的第一节最大奖励倍数是2，第二节的最大奖励倍数是3，如此类推，直到第100节的最大奖励倍数是101。</p>
-                                        <p>b. 为了防止阻塞区块，游戏有可能开启验奖模式。在验奖模式下，若Last Winner是由于故意堵塞区块而产生，则拒绝发放奖金，并将奖金返还奖池。其余结果与正常开奖相同。</p>
-                                        <p>c. 在验奖模式下，设有Gas价格上限，Gas价格超过上限的购买行为会被拒绝。</p>
-                                        <p>d. 每次购买最大数量为500颗种子，超出部分将返还到coToken账号，但购买次数无限制。</p>
-                                        <p>e. 本游戏所有奖励都发送到coToken账号中，所有无效购买也会返还到coToken账号中，请自行提取为ETH。</p>
-                                        <p>f. 若coToken余额足够用于购买，本游戏会优先使用coToken中的余额，减少矿工费的支出，此时需要支付的ETH为0。</p>
-                                        <p>g. 本游戏部分资金用于FUS分红。向本游戏累计投入0.1ETH即永久获得本游戏分红资格，分红数量按照分红时持有的FUS数量进行计算。本游戏投入不足0.1ETH的账号，所持有的FUS不参与本游戏的分红计算。</p>
+                                        <p>2. 游戏中，买入种子分为抢奖买入和护奖买入：抢奖买入有机会获得收益，护奖买入不能获得收益。</p>
+                                        <p>3. 倒计时结束前，可以通过抢奖买入种子获取收益，在每一节内越早买入则收益越大</p>
+                                        <p>4. 买入时Gas价格不要低于2G，否则该请求可能永久不被矿工执行，也对该账号以后的请求有一定阻碍。</p>
+                                        <p>5. 抢奖模式买入时，Gas价格最高为20G，Gas价格超过上限的购买行为会被拒绝，护奖模式不设置Gas价格限制。</p>
+                                        <p>6. 游戏中奖池奖金由两部分加成：A部分为上一节节内分红后的余额、B部分为本节已投额度的66.4%。</p>
+                                        <p>7. 抢奖买入每种子需要0.002ETH，包含资金分配表中的所有条目。护奖买入每种子需要0.001568ETH，只包含资金分配表中前两条目。</p>
+                                        <p>8. 抢奖买入每次购买的种子数，不得少于当前节数。护奖买入每次最少买入1颗种子。</p>
+                                        <p>9. 每买入1颗种子，倒计时延长2秒，最多延长至3小时。</p>
+                                        <p>a.
+                                            倒计时结束后，若执行的购买行为是护奖，则依然按照每种子加2秒的规则延长结束时间。直到执行抢奖行为时，若当前时间仍超过结束时间，则开奖。最后抢奖买入种子的账号，将会赢得最终大奖，数额是奖池奖金的一半，即(A+B)/2。并且奖池奖金中B部分的另一半会积累在下一次的FUS分红总额中。</p>
+
+                                        <p>b. 累计购买每满0.1ETH，可获得13 FUS的额外奖励，FUS可视作股权用于分红。</p>
+                                        <p>c. 每一节都有目标任务，当达到了目标任务后，本节内66.4%资金返还当节玩家，越早购买收益越大，游戏开始下一节，倒计时也延长120秒。</p>
+                                        <p>d. 若倒计时结束，则当节的积累资金归入奖池，并被Last Winner提取，当节玩家无收益。游戏10分钟后进入下一轮。</p>
+                                        <p>e. 每轮的第一节最大奖励倍数是2，第二节的最大奖励倍数是3，如此类推，直到第100节的最大奖励倍数是101。</p>
+                                        <p>f. 为了防止阻塞区块，游戏有可能开启验奖模式。在验奖模式下，若Last
+                                            Winner是由于故意堵塞区块而产生，则拒绝发放奖金，并将奖金返还奖池。其余结果与正常开奖相同。</p>
+                                        <p>g. 每次购买最大数量为500颗种子，超出部分将返还到coToken账号，但购买次数无限制。</p>
+                                        <p>h. 本游戏所有奖励都发送到coToken账号中，所有无效购买也会返还到coToken账号中，请自行提取为ETH。</p>
+                                        <p>i. 若coToken余额足够用于购买，本游戏会优先使用coToken中的余额，减少矿工费的支出，此时需要支付的ETH为0。</p>
+                                        <p>j.
+                                            本游戏部分资金用于FUS分红。向本游戏累计投入0.1ETH即永久获得本游戏分红资格，分红数量按照分红时持有的FUS数量进行计算。本游戏投入不足0.1ETH的账号，所持有的FUS不参与本游戏的分红计算。</p>
                                         <table class="table table-sm text-center">
                                             <thead>
                                             <tr>
@@ -328,7 +437,7 @@
                                             </tr>
                                             <tr>
                                                 <td>FUS分红</td>
-                                                <td>10%</td>
+                                                <td>11.6%</td>
                                             </tr>
                                             <tr>
                                                 <td>上级提成</td>
@@ -340,7 +449,7 @@
                                             </tr>
                                             <tr>
                                                 <td>平台费用</td>
-                                                <td>2.6%</td>
+                                                <td>1%</td>
                                             </tr>
                                             </tbody>
                                         </table>
@@ -352,12 +461,15 @@
                                 <div class="row">
                                     <div class="col-12 pt-3">
                                         <img src="images/whole.png">
-                                        <p>如上图所示，垂直蓝线将圆弧下面分隔为100块，每一块及其右则就是1节。每一节左边的蓝线的高度（y坐标）从右往左依次为2、3、4…101，这就是最高奖励倍数。</p>
+                                        <p>
+                                            如上图所示，垂直蓝线将圆弧下面分隔为100块，每一块及其右则就是1节。每一节左边的蓝线的高度（y坐标）从右往左依次为2、3、4…101，这就是最高奖励倍数。</p>
                                         <p>我们再来看看下面的局部图：</p>
                                         <img src="images/section5.png">
                                         <p>这是第5节的局部图，左边蓝线高度为6，所以第5节的最高倍数为6倍。</p>
-                                        <p>购买种子相当于在x轴上截取一段，这段与圆弧间的垂直面积，就是奖励数量。比如购买种子前，x坐标为-13，当购买100种子，也就是0.2ETH后，x坐标为-13+0.2=-12.8，则-13至-12.8这块的面积，就是奖励数量了，具体数值为1.1017422，也就是图中绿色条块。因此，返奖倍数就是1.1017422÷0.2=5.5倍多。</p>
-                                        <p>但当玩家A在客户端中看到当前状态时，很可能已经有玩家B购买在前。因此当玩家A购买时，可能就只能排在后面了，比如排在了红色条块上，x坐标为-12至-11.8，同样是在x轴上占了0.2的长度。但明显，红色条块比绿色条块矮，因此，玩家A的真实收益就比预期的少了。如果玩家A排得更后，获得的收益就会更少。</p>
+                                        <p>
+                                            购买种子相当于在x轴上截取一段，这段与圆弧间的垂直面积，就是奖励数量。比如购买种子前，x坐标为-13，当购买100种子，也就是0.2ETH后，x坐标为-13+0.2=-12.8，则-13至-12.8这块的面积，就是奖励数量了，具体数值为1.1017422，也就是图中绿色条块。因此，返奖倍数就是1.1017422÷0.2=5.5倍多。</p>
+                                        <p>
+                                            但当玩家A在客户端中看到当前状态时，很可能已经有玩家B购买在前。因此当玩家A购买时，可能就只能排在后面了，比如排在了红色条块上，x坐标为-12至-11.8，同样是在x轴上占了0.2的长度。但明显，红色条块比绿色条块矮，因此，玩家A的真实收益就比预期的少了。如果玩家A排得更后，获得的收益就会更少。</p>
                                     </div>
                                 </div>
                             </div>
@@ -381,6 +493,6 @@
         integrity="sha256-KxHSEnmbcOfmmoeGOLsNUpBeOrNbssSJ3fyskCGsN6M=" crossorigin="anonymous"></script>
 <script src="js/contracts.js"></script>
 <script src="js/utils.js"></script>
-<script src="js/lastwinner2.js"></script>
+<script src="js/lastwinner2b.js"></script>
 </body>
 </html>
