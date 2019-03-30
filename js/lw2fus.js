@@ -16,7 +16,7 @@ var abi = [
         "outputs": [
             {
                 "name": "",
-                "type": "bool"
+                "type": "int256"
             }
         ],
         "payable": false,
@@ -28,13 +28,13 @@ var abi = [
 function onRegisterButtonSubmit() {
     properties.Contract.register(makeTxnCallback(function () {
         $('#register').hide();
-        $('#message').show();
+        $('#message').text('登记成功！').show();
     }));
 }
 
 $(start(function (account) {
     var msg = $('#message').hide(), btn = $('#register');
-    properties.Contract = web3.eth.contract(abi).at(contractAddresses.LastWinner2Fus);
+    properties.Contract = web3.eth.contract(abi).at(contractAddresses.LastWinner2Fus2);
 
     return Promise.all([
         Promise.promisify(properties.Contract.shouldRegister),
@@ -52,9 +52,10 @@ $(start(function (account) {
         return blockchain.shouldRegister();
     }).then(function (p) {
         $('#loadingSpinner').hide();
-        if (!p) {
+        p = p.toNumber();
+        if (p !== 0) {
             btn.hide();
-            msg.show();
+            msg.text((p > 0) ? '您已经登记了！' : '您不是旧LW2的玩家！').show();
         }
     });
 }));
