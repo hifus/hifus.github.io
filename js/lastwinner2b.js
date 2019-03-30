@@ -346,7 +346,6 @@ function updateData() {
             var current = properties.current.div(properties.robPrice).toNumber();
             $('#current').text(current).css('width', (current * 100 / goal).toFixed(3) + '%');
         }
-        $('#autoRewards').text(properties.autoRewards ? '自动发奖' : '人手验奖');
         $('#expected').text(properties.expected.toFixed(7));
         $('#profit').text(properties.profit.toFixed(7));
         calcExpectedProfit(parseInt($('#seed').val() || 0));
