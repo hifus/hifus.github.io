@@ -429,7 +429,7 @@ function onBuyButtonSubmit() {
         } else {
             var cost = properties.price.mul(seed);
             var f = function (receipt) {
-                if (receipt.gasUsed > 90000) {
+                if (receipt.gasUsed > (rob ? 100000 : 60000)) {
                     showTips($('#buyOk'));
                 } else {
                     showTips($('#buyFail'), 2500);
