@@ -256,6 +256,7 @@ function getWinnerList() {
                         return;
                     } else if (t > t0) {
                         li.insertBefore(li0);
+                        break;
                     }
                 }
             }
