@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Last Winner 2</title>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css"
           integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
@@ -221,108 +221,7 @@
                 <div class="jumbotron py-3">
                     <div class="row text-center">
                         <hr>
-                        <div class="col-12">
-                            <form id="buyForm">
-                                <div class="form-group text-left">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="rob"
-                                               value="1" checked>
-                                        <label class="form-check-label" for="rob">抢奖</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="save"
-                                               value="0">
-                                        <label class="form-check-label" for="save">护奖
-                                            <small>&nbsp;(倒计时小于10分钟可用)</small>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="input-group">
-                                        <input type="number" class="form-control text-monospace"
-                                               style="font-size: 1.1rem;"
-                                               id="seed" name="seed" placeholder="@0.002ETH"
-                                               aria-describedby="buyHelp" min="1" max="500" step="1">
-                                        <span id="buyHelp" class="form-text text-muted"
-                                              style="display: none;">请填入您要购买的种子数量</span>
-                                        <div class="input-group-append">
-                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                选择数量
-                                            </button>
-                                            <div class="dropdown-menu" id="seedNum">
-                                                <a class="dropdown-item">1</a>
-                                                <a class="dropdown-item">2</a>
-                                                <a class="dropdown-item">5</a>
-                                                <a class="dropdown-item">10</a>
-                                                <a class="dropdown-item">20</a>
-                                                <a class="dropdown-item">50</a>
-                                                <a class="dropdown-item">100</a>
-                                                <a class="dropdown-item">200</a>
-                                                <a class="dropdown-item">500</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                            <div class="row">
-                                <div class="col-auto mx-auto px-0" id="addBtns">
-                                    <button class="btn btn-outline-danger">
-                                        +1
-                                    </button>
-                                    <button class="btn btn-outline-danger">
-                                        +5
-                                    </button>
-                                    <button class="btn btn-outline-danger">
-                                        +10
-                                    </button>
-                                    <button class="btn btn-outline-danger">
-                                        +50
-                                    </button>
-                                    <button class="btn btn-outline-danger">
-                                        +100
-                                    </button>
-                                </div>
-                                <div class="col-12">
-                                    <div class="row">
-                                        <div id="buyOk" class="alert alert-success col-auto mx-auto"
-                                             style="display: none;z-index: 100;"
-                                             role="alert">购买成功
-                                        </div>
-                                        <div id="buyFail" class="alert alert-danger col-auto mx-auto"
-                                             style="display: none;z-index: 100;"
-                                             role="alert">购买失败<br>资金返还到coToken中
-                                        </div>
-                                        <div id="invSeed" class="alert alert-danger col-auto mx-auto"
-                                             style="display: none;z-index: 100;"
-                                             role="alert">无效的种子数量
-                                        </div>
-                                        <div id="robSeed" class="alert alert-danger col-auto mx-auto"
-                                             style="display: none;z-index: 100;"
-                                             role="alert">种子数量不能小于节数
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12 text-left mt-3">
-                                    <h6>购买支出：<span id="cost">0</span>
-                                        <img src="images/gold.png"
-                                             style="height: 2rem;margin-top: -10px;margin-left: 5px;">
-                                    </h6>
-                                    <h6>预期收益：<span id="expectedProfit">0</span>
-                                        <img src="images/gold.png"
-                                             style="height: 2rem;margin: -10px 5px 0;">(<span id="percent">0</span>%)
-                                    </h6>
-                                </div>
-                                <div class="col-sm-4 mx-auto mt-2">
-                                    <button id="buySubmit" class="btn btn-block btn-lg btn-danger">
-                                        马上抢奖
-                                    </button>
-                                    <div class="text-left">
-                                        <small id="gasLimit">Gas价格上限为20 GWei</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="col-12"><h2 style="color:red;">新版LW2即将上线<br>请勿在此投注</h2></div>
                         <div id="loadingSpinner">
                             <div id="loadingText" class="d-none waiting">正在连接MetaMask...</div>
                             <noscript>
@@ -404,7 +303,7 @@
                                         <p>8. 抢奖买入每次购买的种子数，不得少于当前节数。护奖买入每次最少买入1颗种子。</p>
                                         <p>9. 每买入1颗种子，倒计时延长2秒，最多延长至3小时。</p>
                                         <p>a.
-                                            倒计时结束后，若执行的购买行为是护奖，则依然按照每种子加2秒的规则延长结束时间。直到执行抢奖行为时，若当前时间仍超过结束时间，则开奖。最后抢奖买入种子的账号，将会赢得最终大奖，数额是奖池奖金的一半，即(A+B)/2。并且奖池奖金中B部分的另一半会积累在下一次的FUS分红总额中。</p>
+                                            倒计时结束后，若执行的购买行为是护奖，则依然按照每种子加2秒的规则延长结束时间。直到执行抢奖行为时，若当前时间仍超过结束时间，则开奖。倒计时为0之前最后抢奖买入种子的账号，将会赢得最终大奖，数额是奖池奖金的一半，即(A+B)/2。并且奖池奖金中B部分的另一半会积累在下一次的FUS分红总额中。</p>
 
                                         <p>b. 累计购买每满0.1ETH，可获得13
                                             FUS的额外奖励，FUS可视作股权用于分红。获得的FUS在提取收益时一并提出，以减少购买种子时所产生的矿工费。</p>
