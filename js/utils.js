@@ -107,7 +107,7 @@ function makeTxnCallback(callback, atOnce) {
     function _showError(err) {
         if (err !== 'cancelled') {
             alertify.error('发生错误，请查看控制台日志。');
-            console.log('发生错误', err);
+            console.log('发生了错误: '+ JSON.stringify(err));
         }
     }
 
@@ -158,95 +158,107 @@ function start(f) {
                 var account = properties.Web3.eth.accounts[0].toLowerCase();
                 properties.Web3.eth.defaultAccount = account;
                 properties.ether = web3.toBigNumber(properties.Web3.toWei(1, 'ether'));
+                properties.GWei = web3.toBigNumber('1000000000');
                 properties.bn0 = web3.toBigNumber('0');
                 properties.bn2 = web3.toBigNumber('2');
-                blockchain.getBlockNumber = Promise.promisify(properties.Web3.eth.getBlockNumber);
 
-                var listeners = [];
-                var routines = [];
-                window.addBlockListener = function (fn, interval) {
-                    if (typeof fn === 'function') {
-                        interval = parseInt(interval);
-                        if (isNaN(interval) || !isFinite(interval)) interval = 1;
-                        if (interval > 0) {
-                            listeners.push([fn, properties.LastBlock, interval]);
-                        }
-                    }
-                };
+                Promise.all([
+                    Promise.promisify(properties.Web3.eth.getBlockNumber),
+                    Promise.promisify(properties.Web3.eth.getBlock),
+                    Promise.promisify(properties.Web3.eth.getGasPrice),
+                    Promise.promisify(properties.Web3.eth.getBalance),
+                ]).then(function (_promisfied) {
+                    blockchain.getBlockNumber = _promisfied[0];
+                    blockchain.getBlock = _promisfied[1];
+                    blockchain.getGasPrice = _promisfied[2];
+                    blockchain.getBalance = _promisfied[3];
 
-                window.addIntervalRoutine = function (fn, interval) {
-                    if (typeof fn === 'function') {
-                        interval = parseInt(interval);
-                        if (isNaN(interval) || !isFinite(interval)) interval = 1;
-                        if (interval > 0) {
-                            routines.push([fn, Math.floor((new Date()).getTime() / 1000), interval]);
-                        }
-                    }
-                };
-
-                window.updateToBlock = function (p, fn, fnGetBlock) {
-                    if (typeof fnGetBlock !== 'function') {
-                        var idx = (typeof fnGetBlock !== 'number') ? 0 : parseInt(fnGetBlock);
-                        fnGetBlock = function (promises) {
-                            return promises[idx].toNumber();
-                        };
-                    }
-                    var blockNumber = 0;
-                    var running = false;
-
-                    var _f = function () {
-                        if (running) return;
-                        running = true;
-
-                        p().then(function (promises) {
-                            //(block.number, data[51], totalBonus[SafeMath.hash(msg.sender)], coToken(coTokenAddress).balanceOf(msg.sender), (dateBuy[statTime >> 64] << 64) + uint64(now));
-                            var _blockNumber = fnGetBlock(promises);
-                            if (_blockNumber > blockNumber) {
-                                blockNumber = _blockNumber;
-                                fn(promises);
-                                if (blockNumber < properties.LastBlock) {
-                                    running = false;
-                                    _f();
-                                    return;
-                                }
+                    var listeners = [];
+                    var routines = [];
+                    window.addBlockListener = function (fn, interval) {
+                        if (typeof fn === 'function') {
+                            interval = parseInt(interval);
+                            if (isNaN(interval) || !isFinite(interval)) interval = 1;
+                            if (interval > 0) {
+                                listeners.push([fn, properties.LastBlock, interval]);
                             }
-                            running = false;
-                        }).catch(function (err) {
-                            running = false;
-                            _f();
-                        });
+                        }
                     };
 
-                    return _f;
-                };
+                    window.addIntervalRoutine = function (fn, interval) {
+                        if (typeof fn === 'function') {
+                            interval = parseInt(interval);
+                            if (isNaN(interval) || !isFinite(interval)) interval = 1;
+                            if (interval > 0) {
+                                routines.push([fn, Math.floor((new Date()).getTime() / 1000), interval]);
+                            }
+                        }
+                    };
 
-                f(account, loadingText).then(function () {
-                    setInterval(function () {
-                        if (listeners.length) {
-                            blockchain.getBlockNumber().then(function (_blockNum) {
-                                if (_blockNum > properties.LastBlock) {
-                                    properties.LastBlock = _blockNum;
-                                    $.each(listeners, function (i, e) {
-                                        var n = _blockNum - e[1];
-                                        if (n >= e[2]) {
-                                            e[1] += Math.floor(n / e[2]) * e[2];
-                                            e[0]();
-                                        }
-                                    });
+                    window.updateToBlock = function (p, fn, fnGetBlock) {
+                        if (typeof fnGetBlock !== 'function') {
+                            var idx = (typeof fnGetBlock !== 'number') ? 0 : parseInt(fnGetBlock);
+                            fnGetBlock = function (promises) {
+                                return promises[idx].toNumber();
+                            };
+                        }
+                        var blockNumber = 0;
+                        var running = false;
+
+                        var _f = function () {
+                            if (running) return;
+                            running = true;
+
+                            p().then(function (promises) {
+                                //(block.number, data[51], totalBonus[SafeMath.hash(msg.sender)], coToken(coTokenAddress).balanceOf(msg.sender), (dateBuy[statTime >> 64] << 64) + uint64(now));
+                                var _blockNumber = fnGetBlock(promises);
+                                if (_blockNumber > blockNumber) {
+                                    blockNumber = _blockNumber;
+                                    fn(promises);
+                                    if (blockNumber < properties.LastBlock) {
+                                        running = false;
+                                        _f();
+                                        return;
+                                    }
+                                }
+                                running = false;
+                            }).catch(function (err) {
+                                running = false;
+                                _f();
+                            });
+                        };
+
+                        return _f;
+                    };
+
+                    f(account, loadingText).then(function () {
+                        setInterval(function () {
+                            if (listeners.length) {
+                                blockchain.getBlockNumber().then(function (_blockNum) {
+                                    if (_blockNum > properties.LastBlock) {
+                                        properties.LastBlock = _blockNum;
+                                        $.each(listeners, function (i, e) {
+                                            var n = _blockNum - e[1];
+                                            if (n >= e[2]) {
+                                                e[1] += Math.floor(n / e[2]) * e[2];
+                                                e[0]();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                            var now = Math.floor((new Date()).getTime() / 1000);
+                            $.each(routines, function (i, e) {
+                                var n = now - e[1];
+                                if (n >= e[2]) {
+                                    e[1] += Math.floor(n / e[2]) * e[2];
+                                    e[0]();
                                 }
                             });
-                        }
-                        var now = Math.floor((new Date()).getTime() / 1000);
-                        $.each(routines, function (i, e) {
-                            var n = now - e[1];
-                            if (n >= e[2]) {
-                                e[1] += Math.floor(n / e[2]) * e[2];
-                                e[0]();
-                            }
-                        });
-                    }, 1000);
-                }).catch(function (err) {
-                    console.log("出错了", err);
+                        }, 1000);
+                    }).catch(function (err) {
+                        console.log("出错了", err);
+                    });
                 });
             } else {
                 loadingText.removeClass("waiting").text("获取当前账号失败");

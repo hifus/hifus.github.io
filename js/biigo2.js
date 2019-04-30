@@ -632,6 +632,15 @@ $(start(function (account) {
     }).then(function () {
         $('#loadingSpinner').hide();
 
+		if (typeof coToken !== "undefined" && typeof coToken.setRotatable !== "undefined") {
+			coToken.setRotatable(false);
+            $('#DetailsModal').on('show.bs.modal', function () {
+                coToken.setRotatable(true);
+            }).on('hide.bs.modal', function () {
+                coToken.setRotatable(false);
+            });
+        }
+        
         properties.ether = web3.toBigNumber(properties.Web3.toWei(1, 'ether'));
         properties.bn2 = web3.toBigNumber('2');
         properties.bn2p4 = properties.bn2.pow(4);

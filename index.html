@@ -70,7 +70,8 @@
 <script src="js/content.js"></script>
 <script>
     $(function () {
-        if (location.search.toLowerCase() === '?browser') {
+    	var search = location.search.toLowerCase();
+        if (search === '?browser') {
             if (is_android()) {
                 location.href = 'face2face.html?download';
             } else if (is_iOS()) {
@@ -82,6 +83,10 @@
             } else {
                 alertify.alert('您的浏览器不支持以太坊钱包，请使用谷歌浏览器(Chrome)或火狐浏览器(Firefox)。');
             }
+        } else if (search.length) {
+            search = search.substr(1);
+            if (isValidAddress(search))
+                window.EthAccount = search;
         }
 
         $('#jump').on('click', function () {
@@ -95,7 +100,9 @@
                     $row = $('<div class="row"></div>').appendTo($hot);
                     $('<hr>').appendTo($hot);
                 }
-                $('<div class="col-4"><div class="text-center"><a><img><br>' + e[2] + '</a></div></div>').appendTo($row).find('a').attr('href', e[0]).find('img').attr('src', e[1]).attr('alt', e[2] || '');
+                var url = e[0];
+                if (typeof url === 'function') url = url();
+                $('<div class="col-4"><div class="text-center"><a><img><br>' + e[2] + '</a></div></div>').appendTo($row).find('a').attr('href', url).find('img').attr('src', e[1]).attr('alt', e[2] || '');
             });
         }
         if (typeof announcement !== 'undefined') {
